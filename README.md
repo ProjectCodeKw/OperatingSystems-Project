@@ -55,12 +55,13 @@ A sample input file is provided. However, this is not the input file that your a
 will be tested and graded on.
 
 Sample Input: input.txt
+```
 3
 1 0 10 3
 2 0 5 4
 3 3 5 2
 4 7 4 2
-5 10 6 1
+5 10 6 1```
 6 10 7 4
 
 
