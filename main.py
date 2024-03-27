@@ -20,13 +20,14 @@ def main():
     # test the preemptive scheduling
     preemptive = PreemptivePriority(p_objects)
     preemptive.simulate_CPU()
+    preemptive.calculate_average()
 
     #print the averages:
     print(f"""
 --------------------------------------------------------
-|average response time    | {preemptive.avg_rt/len(processes_data)} ms      
-|average waiting time     | {preemptive.avg_wt/len(processes_data)} ms     
-|averate turn around time | {preemptive.avg_tat/len(processes_data)} ms    
+|average response time    | {preemptive.avg_rt} ms      
+|average waiting time     | {preemptive.avg_wt} ms     
+|averate turn around time | {preemptive.avg_tat} ms    
 ---------------------------------------------------------\n
 """)
 
