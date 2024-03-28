@@ -87,26 +87,26 @@ def streamlit_app():
         #title 
         st.subheader(algo)
         selected = "a"
-
-        if st.button("Simulate Proccess Scheduling", use_container_width=True) and user_input is not None:
-            processes_objs = read_file()
-            # test the preemptive scheduling
-            preemptive = PreemptivePriority(processes_objs)
-            preemptive.simulate_CPU()
-            preemptive.calculate_average()
-
-            df1 = pd.DataFrame(preemptive.grant_chart)
-            st.table(df1.T)
-
-            avg_data = [
-                (" Response Time (ms)", preemptive.avg_rt),
-                (" Waiting Time (ms)", preemptive.avg_wt),
-                (" TurnAround Time (ms)", preemptive.avg_tat)
-            ]
-
-            df2 = pd.DataFrame(avg_data, columns=["Average", "Value"])
-
-            st.table(df2)
+        if user_input is not None:
+              if st.button("Simulate Proccess Scheduling", use_container_width=True):
+                  processes_objs = read_file()
+                  # test the preemptive scheduling
+                  preemptive = PreemptivePriority(processes_objs)
+                  preemptive.simulate_CPU()
+                  preemptive.calculate_average()
+      
+                  df1 = pd.DataFrame(preemptive.grant_chart)
+                  st.table(df1.T)
+      
+                  avg_data = [
+                      (" Response Time (ms)", preemptive.avg_rt),
+                      (" Waiting Time (ms)", preemptive.avg_wt),
+                      (" TurnAround Time (ms)", preemptive.avg_tat)
+                  ]
+      
+                  df2 = pd.DataFrame(avg_data, columns=["Average", "Value"])
+      
+                  st.table(df2)
 
     with tab_b:
         algo = "Round Robin"
