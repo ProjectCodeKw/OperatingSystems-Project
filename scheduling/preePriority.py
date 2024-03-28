@@ -5,6 +5,7 @@ class PreemptivePriority:
         self.avg_rt = 0
         self.avg_wt = 0
         self.avg_tat = 0
+        self.grant_chart = []
 
     def simulate_CPU(self):
         current_time = 0
@@ -67,7 +68,8 @@ class PreemptivePriority:
                 prev_process = running_p 
                 
                 #run the process:
-                print(f"| P{running_p.pid} |", end=" ")
+                #print(f"| P{running_p.pid} |", end=" ")
+                self.grant_chart.append(f'P{running_p.pid}')
 
             elif prev_process != running_p:
                 # context switch happend, processes have changed
@@ -84,7 +86,8 @@ class PreemptivePriority:
                 prev_process = running_p #store the process in prev so we check again for context switch
                 
                 #run the process:
-                print(f"P{running_p.pid } |", end=" ")
+                #print(f"P{running_p.pid } |", end=" ")
+                self.grant_chart.append(f'P{running_p.pid}')
 
             #increment the time
             current_time += 1
