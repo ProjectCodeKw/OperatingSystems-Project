@@ -56,7 +56,7 @@ def read_file():
 def streamlit_app():
     st.set_page_config(page_title="CPU Scheduling", page_icon="⏰", layout="centered")
     st.image("header.png")
-    st.ballons()
+    st.balloons()
     
     #input file
     user_input = st.file_uploader("please input your input txt file here", type='txt')
