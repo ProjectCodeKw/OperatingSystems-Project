@@ -83,12 +83,12 @@ def streamlit_app():
 
     tab_a, tab_b, tab_c, tab_d = st.tabs(["PP","RR", "SRTF", "MLFD Custom"])
     with tab_a:
-        algo = "Preemptive Priority Simulator"
+        algo = "Preemptive Priority"
         #title 
         st.subheader(algo)
         selected = "a"
         if user_input is not None:
-              if st.button("Simulate Proccess Scheduling", use_container_width=True):
+              if st.button(f"Simulate {algo} Scheduling", use_container_width=True):
                   processes_objs = read_file()
                   # test the preemptive scheduling
                   preemptive = PreemptivePriority(processes_objs)
