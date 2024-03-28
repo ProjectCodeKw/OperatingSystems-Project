@@ -3,8 +3,7 @@ from scheduling.preePriority import PreemptivePriority
 import streamlit as st
 from streamlit_extras import add_vertical_space as avs
 import pandas as pd
-import numpy as np
-import plotly.figure_factory as ff
+
 def main():
    
  # returns a list of process objects
