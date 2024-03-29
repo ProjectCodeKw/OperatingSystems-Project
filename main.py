@@ -3,6 +3,7 @@ from scheduling.preePriority import PreemptivePriority
 import streamlit as st
 from streamlit_extras import add_vertical_space as avs
 import pandas as pd
+
 import numpy as np
 
 
@@ -58,6 +59,7 @@ def read_file():
 def streamlit_app():
     st.set_page_config(page_title="CPU Scheduling", page_icon="⏰", layout="centered")
     st.image("header.png")
+    st.balloons()
     
     #input file
     user_input = st.file_uploader("please input your input txt file here", type='txt')
@@ -85,30 +87,30 @@ def streamlit_app():
 
     tab_a, tab_b, tab_c, tab_d = st.tabs(["PP","RR", "SRTF", "MLFD Custom"])
     with tab_a:
-        algo = "Preemptive Priority Simulator"
+        algo = "Preemptive Priority"
         #title 
         st.subheader(algo)
         selected = "a"
-
-        if st.button("Simulate Proccess Scheduling", use_container_width=True):
-            processes_objs = read_file()
-            # test the preemptive scheduling
-            preemptive = PreemptivePriority(processes_objs)
-            preemptive.simulate_CPU()
-            preemptive.calculate_average()
-
-            df1 = pd.DataFrame(preemptive.grant_chart)
-            st.table(df1.T)
-
-            avg_data = [
-                (" Response Time (ms)", preemptive.avg_rt),
-                (" Waiting Time (ms)", preemptive.avg_wt),
-                (" TurnAround Time (ms)", preemptive.avg_tat)
-            ]
-
-            df2 = pd.DataFrame(avg_data, columns=["Average", "Value"])
-
-            st.table(df2)
+        if user_input is not None:
+              if st.button(f"Simulate {algo} Scheduling", use_container_width=True):
+                  processes_objs = read_file()
+                  # test the preemptive scheduling
+                  preemptive = PreemptivePriority(processes_objs)
+                  preemptive.simulate_CPU()
+                  preemptive.calculate_average()
+      
+                  df1 = pd.DataFrame(preemptive.grant_chart)
+                  st.table(df1.T)
+      
+                  avg_data = [
+                      (" Response Time (ms)", preemptive.avg_rt),
+                      (" Waiting Time (ms)", preemptive.avg_wt),
+                      (" TurnAround Time (ms)", preemptive.avg_tat)
+                  ]
+      
+                  df2 = pd.DataFrame(avg_data, columns=["Average", "Value"])
+      
+                  st.table(df2)
 
     with tab_b:
         algo = "Round Robin"
