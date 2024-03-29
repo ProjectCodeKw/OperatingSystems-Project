@@ -1,21 +1,38 @@
-
-class PreemptivePriority:
+class Custom:
     def __init__(self, processes:list):
         self.processes = processes
         self.avg_rt = 0
         self.avg_wt = 0
         self.avg_tat = 0
         self.grant_chart = []
+        self.q1 = [] #PP (priority = 1)
+        self.q2 = [] #SJF (priority = 2)
+        self.q3 = [] #FCFS (priority = 3)
+        self.current_time = 0
+        self.process_completed = [0,0,0] #each index is for one QUEUE
+        
 
-    def simulate_pp(self):
-        current_time = 0
+    def demote(self, processes:list, demote_to:str):
+        if demote_to == "Q2":
+            self.q2.extend(processes)
+        elif demote_to == "Q3":
+            self.q3.extend(processes)
+
+    def preemprtive_priotity(self):
         waiting_queue = []
         temp_q = []
         prev_process = None
-        process_completed = 0
 
         while True:
-            temp_q = [p for p in self.processes if p.at == current_time and p not in waiting_queue]
+            temp_q = [p for p in self.q1 if p.at == self.current_time and p not in waiting_queue]
+            
+
+            #check if Q1 is empty:
+            if temp_q == []:
+                # go to Q2
+                # return the next arraival time for Q1
+                return self.q1[self.q1.index(running_p)+1]
+
             waiting_queue.extend(temp_q)
 
             #get highest priority
@@ -26,8 +43,8 @@ class PreemptivePriority:
                 if p.priority < running_p.priority:
                     #context switch will happen:
                     #get waiting time:
-                    running_p.wt += (current_time - running_p.ft)
-                    running_p.ft = current_time
+                    running_p.wt += (self.current_time - running_p.ft)
+                    running_p.ft = self.current_time
 
                     # change current running process
                     running_p = p
@@ -40,16 +57,16 @@ class PreemptivePriority:
             # remove the process if the burst time is 0
             if waiting_queue[running_p_index].bt == 0:
                 waiting_queue.remove(running_p)
-                process_completed+= 1
+                self.process_completed[0] += 1
 
                 # set finish time:
-                running_p.ft = current_time
+                running_p.ft = self.current_time
 
                 # set the TAT 
                 running_p.tat = running_p.ft - running_p.at + 1
                 
 
-            if current_time == 0:
+            if self.current_time == 0:
                 # no prev process
                 # store the prev process so we dont print it in a row multiple times
                 prev_process = running_p
@@ -57,7 +74,7 @@ class PreemptivePriority:
                 #get response time:
                 if running_p.rt == 0:
                     # response time is calculated for the first burst 
-                    running_p.rt = current_time - running_p.at
+                    running_p.rt = self.current_time - running_p.at
                     
 
                     # make the response time = -1 to declare that it has been added to the avg
@@ -77,7 +94,7 @@ class PreemptivePriority:
                 #get response time:
                 if running_p.rt == 0:
                     # response time is calculated for the first burst only
-                    running_p.rt = current_time - running_p.at
+                    running_p.rt = self.current_time - running_p.at
 
                     # make the response time = 1 to declare that it has been added to the avg
                     # this is good for the case of the first process running
@@ -90,36 +107,27 @@ class PreemptivePriority:
                 self.grant_chart.append(f'P{running_p.pid}')
 
             #increment the time
-            current_time += 1
+            self.current_time += 1
 
             #check if the all the processes have ran:
-            if process_completed == len(self.processes):
-                #print(f"\nAll processes have finished, Time needed: {current_time} ms")
-                return
+            if self.process_completed[0] == len(self.q1):
+                #no more Q1 processes.
+                return None
             
-    def calculate_average(self):
-        n = len(self.processes)
-
-        # get avg response time
-        for p in self.processes:
-            if p.rt != -1:
-                # like we assumed if rt is -1 then it is actually 0 so no need to sum it
-                self.avg_rt += p.rt
-
-        self.avg_rt = self.avg_rt/n
-
-        # get average waiting time
-        for p in self.processes:
-            self.avg_wt += p.wt
-
-        self.avg_wt = self.avg_wt/n
-
-        # get average TAT
-        for p in self.processes:
-            self.avg_tat += p.tat
-
-        self.avg_tat = self.avg_tat/n
+    def shortest_job_first(self):
         
+    
+    def first_come_first_served(self):
+        pass
+            
+    def determine_queue(self):
 
+        #PP queue
+        self.q1 = [p for p in self.processes if p.at == self.current_time and p not in self.q1]
+        q1_next_p = self.preemprtive_priotity()
+        # demote the excuted processes that didnot terminate to Q2
+        demote_p = [p for p in self.q1[0:self.q1.index(q1_next_p)] if p.bt != 0] 
+        self.demote(processes=demote_p, demote_to="Q2")
 
-
+        
+        self.current_time += 1

@@ -4,8 +4,6 @@ import streamlit as st
 from streamlit_extras import add_vertical_space as avs
 import pandas as pd
 
-import numpy as np
-
 
 def main():
    
@@ -96,7 +94,7 @@ def streamlit_app():
                   processes_objs = read_file()
                   # test the preemptive scheduling
                   preemptive = PreemptivePriority(processes_objs)
-                  preemptive.simulate_CPU()
+                  preemptive.simulate_pp()
                   preemptive.calculate_average()
       
                   df1 = pd.DataFrame(preemptive.grant_chart)
@@ -116,19 +114,16 @@ def streamlit_app():
         algo = "Round Robin"
         #title 
         st.subheader(algo)
-        selected = "b"
 
     with tab_c:
         algo = "Shortest Remaining Time First "
         #title 
         st.subheader(algo)
-        selected = "c"
 
     with tab_d:
         algo = "Multi-level Feedback Queue Custom"
         #title 
         st.subheader(algo)
-        selected = "d"
 
     
 
