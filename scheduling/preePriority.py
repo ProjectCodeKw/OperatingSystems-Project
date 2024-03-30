@@ -25,17 +25,18 @@ class PreemptivePriority:
             for p in waiting_queue[1:len(waiting_queue)]:
                 if p.priority < running_p.priority:
                     #context switch will happen:
-                    #get waiting time:
-                    running_p.wt += (current_time - running_p.ft)
-                    running_p.ft = current_time
-
                     # change current running process
                     running_p = p
                     running_p_index = waiting_queue.index(p)
                     
             
             # subtract the BT from the running process
-            waiting_queue[running_p_index].bt = waiting_queue[running_p_index].bt - 1
+            self.processes[self.processes.index(running_p)].bt -= 1
+
+            #increment waiting time for all none running processes
+            for process in waiting_queue:
+                if process != running_p:
+                    self.processes[self.processes.index(process)].wt += 1
 
             # remove the process if the burst time is 0
             if waiting_queue[running_p_index].bt == 0:
@@ -55,38 +56,27 @@ class PreemptivePriority:
                 prev_process = running_p
 
                 #get response time:
-                if running_p.rt == 0:
+                if running_p.rt == 0 and f'P{running_p}' not in self.grant_chart:
                     # response time is calculated for the first burst 
                     running_p.rt = current_time - running_p.at
-                    
-
-                    # make the response time = -1 to declare that it has been added to the avg
-                    # this is good for the case of the first process running
-                    running_p.rt = -1 
 
                 #store the process in prev so we check again for context switch
                 prev_process = running_p 
                 
                 #run the process:
-                #print(f"| P{running_p.pid} |", end=" ")
                 self.grant_chart.append(f'P{running_p.pid}')
 
             elif prev_process != running_p:
                 # context switch happend, processes have changed
 
                 #get response time:
-                if running_p.rt == 0:
+                if running_p.rt == 0 and f'P{running_p}' not in self.grant_chart:
                     # response time is calculated for the first burst only
                     running_p.rt = current_time - running_p.at
-
-                    # make the response time = 1 to declare that it has been added to the avg
-                    # this is good for the case of the first process running
-                    running_p.rt = -1 
 
                 prev_process = running_p #store the process in prev so we check again for context switch
                 
                 #run the process:
-                #print(f"P{running_p.pid } |", end=" ")
                 self.grant_chart.append(f'P{running_p.pid}')
 
             #increment the time
@@ -102,9 +92,8 @@ class PreemptivePriority:
 
         # get avg response time
         for p in self.processes:
-            if p.rt != -1:
-                # like we assumed if rt is -1 then it is actually 0 so no need to sum it
-                self.avg_rt += p.rt
+            # like we assumed if rt is -1 then it is actually 0 so no need to sum it
+            self.avg_rt += p.rt
 
         self.avg_rt = self.avg_rt/n
 

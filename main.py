@@ -1,4 +1,5 @@
 from scheduling.process import Process
+from scheduling.custom import Custom
 from scheduling.preePriority import PreemptivePriority
 import streamlit as st
 from streamlit_extras import add_vertical_space as avs
@@ -23,19 +24,39 @@ def main():
         p_objects.append(p_obj)
 
     # test the preemptive scheduling
+    '''
     preemptive = PreemptivePriority(p_objects)
-    preemptive.simulate_CPU()
+    preemptive.simulate_pp()
     preemptive.calculate_average()
 
     #print the averages:
+    print(preemptive.grant_chart)
     print(f"""
---------------------------------------------------------
-|average response time    | {preemptive.avg_rt} ms      
-|average waiting time     | {preemptive.avg_wt} ms     
-|averate turn around time | {preemptive.avg_tat} ms    
----------------------------------------------------------\n
-""")
+    --------------------------------------------------------
+    |average response time    | {preemptive.avg_rt} ms      
+    |average waiting time     | {preemptive.avg_wt} ms     
+    |averate turn around time | {preemptive.avg_tat} ms    
+    ---------------------------------------------------------\n
+    """)
+    '''
     
+
+    # test custom algorithm scheduling
+    custom = Custom(p_objects, q)
+    custom.determine_queue()
+    custom.calculate_average()
+    print(custom.grant_chart)
+
+    #print the averages:
+    print(f"""
+    --------------------------------------------------------
+    |average response time    | {custom.avg_rt} ms      
+    |average waiting time     | {custom.avg_wt} ms     
+    |averate turn around time | {custom.avg_tat} ms    
+    ---------------------------------------------------------\n
+    """)
+
+
 def read_file():
     # returns a list of process objects
     f = open("input.txt", "r")
@@ -52,17 +73,37 @@ def read_file():
         p_obj = Process(*p)
         p_objects.append(p_obj)
 
-    return p_objects
+    return q, p_objects
+
+def set_session_state(b):
+    st.session_state.b = b
+
+def get_session_state():
+    if 'b' not in st.session_state:
+        return False
+    return st.session_state.b
 
 def streamlit_app():
     st.set_page_config(page_title="CPU Scheduling", page_icon="⏰", layout="centered")
     st.image("header.png")
-    st.balloons()
+    
+    b = get_session_state()
+    if b is False:
+        st.balloons()
+        set_session_state(True)
     
     #input file
-    user_input = st.file_uploader("please input your input txt file here", type='txt')
-    st.markdown("The file should follow the following structor:")
-    st.code("3\n1 0 3 3\n2 1 6 2\n3 3 2 2\n4 8 2 1", language='python')
+    user_input = st.file_uploader("please upload your input txt file here or use the default data", type='txt')
+    st.markdown("The file should follow the following structure:")
+
+    #display input snippet
+    contents = ''
+    with open('input.txt', 'r') as f:
+        for line in f:
+            contents += line
+        
+    st.code(contents, language='python')
+
     st.markdown('---')
     avs.add_vertical_space(1)
     if user_input is not None:
@@ -76,7 +117,7 @@ def streamlit_app():
 
         #display the user input:
         st.markdown("Your input:")
-        st.code("3\n1 0 3 3\n2 1 6 2\n3 3 2 2\n4 8 2 1", language='python')
+        st.code(file_contents, language='python')
 
         avs.add_vertical_space(1)
 
@@ -88,27 +129,28 @@ def streamlit_app():
         algo = "Preemptive Priority"
         #title 
         st.subheader(algo)
-        selected = "a"
-        if user_input is not None:
-              if st.button(f"Simulate {algo} Scheduling", use_container_width=True):
-                  processes_objs = read_file()
+        if True:
+              if st.button(f"Simulate PP Scheduling", use_container_width=True):
+                  q, processes_objs = read_file()
                   # test the preemptive scheduling
                   preemptive = PreemptivePriority(processes_objs)
                   preemptive.simulate_pp()
                   preemptive.calculate_average()
+
+                  columns_list = [' '+f' '*i for i,v in enumerate(preemptive.grant_chart)] #row number 1
+                  chart = tuple(preemptive.grant_chart),
+                  df1_PP = pd.DataFrame(chart,  columns=columns_list)
+                  st.table(df1_PP)
       
-                  df1 = pd.DataFrame(preemptive.grant_chart)
-                  st.table(df1.T)
-      
-                  avg_data = [
+                  avg_data_PP = [
                       (" Response Time (ms)", preemptive.avg_rt),
                       (" Waiting Time (ms)", preemptive.avg_wt),
                       (" TurnAround Time (ms)", preemptive.avg_tat)
                   ]
       
-                  df2 = pd.DataFrame(avg_data, columns=["Average", "Value"])
+                  df2_PP = pd.DataFrame(avg_data_PP, columns=["Average", "Value"])
       
-                  st.table(df2)
+                  st.table(df2_PP)
 
     with tab_b:
         algo = "Round Robin"
@@ -124,6 +166,36 @@ def streamlit_app():
         algo = "Multi-level Feedback Queue Custom"
         #title 
         st.subheader(algo)
+        if True:
+            if st.button(f"Simulate MLFQC Scheduling", use_container_width=True):
+                q, processes_objs = read_file()
+                st.markdown("This scheduler offers the following algorithms (preemptive): ")
+                st.code("> Preemptive Priority (highest priority queue: Q1)", language='python')
+                st.code(f"> Round Robin w/ q={q} (medium priority queue: Q2)",  language='python')
+                st.code("> First Come First Served (lowest priority queue: Q3)",  language='python')
+                avs.add_vertical_space(2)
+                # test the preemptive scheduling
+                custom = Custom(processes_objs, q)
+                custom.determine_queue()
+                custom.calculate_average()
+
+                #fix the grand_chgart format for printing
+                Q_list = [v[0:2]+f' '*i for i,v in enumerate(custom.grant_chart)] #row number 1
+                p_list =  [i[4:len(i)] for i in custom.grant_chart] # row number 2
+                p_tuple = [tuple(p_list)]
+                df1_MLFQC = pd.DataFrame(p_tuple, columns=Q_list)
+                st.table(df1_MLFQC)
+                
+                avg_data_MLFQC = [
+                      (" Response Time (ms)", custom.avg_rt),
+                      (" Waiting Time (ms)", custom.avg_wt),
+                      (" TurnAround Time (ms)", custom.avg_tat)
+                  ]
+
+
+                df2_MLFQC = pd.DataFrame(avg_data_MLFQC, columns=["Average", "Value"])
+      
+                st.table(df2_MLFQC)
 
     
 
