@@ -212,7 +212,7 @@ b, page = get_session_state()
 
 if b is False:
     st.balloons()
-    set_session_state(True)
+    set_session_state(True, '1')
 
 with st.sidebar:
     st.header("Go to:")
