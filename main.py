@@ -106,6 +106,7 @@ def streamlit_app1():
 
     st.markdown('---')
     avs.add_vertical_space(1)
+    
     if user_input is not None:
         file_contents = user_input.getvalue().decode("utf-8")
 
@@ -129,28 +130,28 @@ def streamlit_app1():
         algo = "Preemptive Priority"
         #title 
         st.subheader(algo)
-        if True:
-              if st.button(f"Simulate PP Scheduling", use_container_width=True):
-                  q, processes_objs = read_file()
-                  # test the preemptive scheduling
-                  preemptive = PreemptivePriority(processes_objs)
-                  preemptive.simulate_pp()
-                  preemptive.calculate_average()
+        
+        if st.button(f"Simulate PP Scheduling", use_container_width=True):
+            q, processes_objs = read_file()
+            # test the preemptive scheduling
+            preemptive = PreemptivePriority(processes_objs)
+            preemptive.simulate_pp()
+            preemptive.calculate_average()
 
-                  columns_list = [' '+f' '*i for i,v in enumerate(preemptive.grant_chart)] #row number 1
-                  chart = tuple(preemptive.grant_chart),
-                  df1_PP = pd.DataFrame(chart,  columns=columns_list)
-                  st.table(df1_PP)
+            columns_list = [' '+f' '*i for i,v in enumerate(preemptive.grant_chart)] #row number 1
+            chart = tuple(preemptive.grant_chart),
+            df1_PP = pd.DataFrame(chart,  columns=columns_list)
+            st.table(df1_PP)
       
-                  avg_data_PP = [
+            avg_data_PP = [
                       (" Response Time (ms)", preemptive.avg_rt),
                       (" Waiting Time (ms)", preemptive.avg_wt),
                       (" TurnAround Time (ms)", preemptive.avg_tat)
                   ]
       
-                  df2_PP = pd.DataFrame(avg_data_PP, columns=["Average", "Value"])
+            df2_PP = pd.DataFrame(avg_data_PP, columns=["Average", "Value"])
       
-                  st.table(df2_PP)
+            st.table(df2_PP)
 
     with tab_b:
         algo = "Round Robin"
@@ -166,36 +167,36 @@ def streamlit_app1():
         algo = "Multi-level Feedback Queue Custom"
         #title 
         st.subheader(algo)
-        if True:
-            if st.button(f"Simulate MLFQC Scheduling", use_container_width=True):
-                q, processes_objs = read_file()
-                st.markdown("This scheduler offers the following algorithms (preemptive): ")
-                st.code("> Preemptive Priority (highest priority queue: Q1)", language='python')
-                st.code(f"> Round Robin w/ q={q} (medium priority queue: Q2)",  language='python')
-                st.code("> First Come First Served (lowest priority queue: Q3)",  language='python')
-                avs.add_vertical_space(2)
-                # test the preemptive scheduling
-                custom = Custom(processes_objs, q)
-                custom.determine_queue()
-                custom.calculate_average()
+        
+        if st.button(f"Simulate MLFQC Scheduling", use_container_width=True):
+            q, processes_objs = read_file()
+            st.markdown("This scheduler offers the following algorithms (preemptive): ")
+            st.code("> Preemptive Priority (highest priority queue: Q1)", language='python')
+            st.code(f"> Round Robin w/ q={q} (medium priority queue: Q2)",  language='python')
+            st.code("> First Come First Served (lowest priority queue: Q3)",  language='python')
+            avs.add_vertical_space(2)
+             # test the preemptive scheduling
+            custom = Custom(processes_objs, q)
+            custom.determine_queue()
+            custom.calculate_average()
 
-                #fix the grand_chgart format for printing
-                Q_list = [v[0:2]+f' '*i for i,v in enumerate(custom.grant_chart)] #row number 1
-                p_list =  [i[4:len(i)] for i in custom.grant_chart] # row number 2
-                p_tuple = [tuple(p_list)]
-                df1_MLFQC = pd.DataFrame(p_tuple, columns=Q_list)
-                st.table(df1_MLFQC)
+            #fix the grand_chgart format for printing
+            Q_list = [v[0:2]+f' '*i for i,v in enumerate(custom.grant_chart)] #row number 1
+            p_list =  [i[4:len(i)] for i in custom.grant_chart] # row number 2
+            p_tuple = [tuple(p_list)]
+            df1_MLFQC = pd.DataFrame(p_tuple, columns=Q_list)
+            st.table(df1_MLFQC)
                 
-                avg_data_MLFQC = [
+            avg_data_MLFQC = [
                       (" Response Time (ms)", custom.avg_rt),
                       (" Waiting Time (ms)", custom.avg_wt),
                       (" TurnAround Time (ms)", custom.avg_tat)
                   ]
 
 
-                df2_MLFQC = pd.DataFrame(avg_data_MLFQC, columns=["Average", "Value"])
+            df2_MLFQC = pd.DataFrame(avg_data_MLFQC, columns=["Average", "Value"])
       
-                st.table(df2_MLFQC)
+            st.table(df2_MLFQC)
 
     
 def streamlit_app2():
