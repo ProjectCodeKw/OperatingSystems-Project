@@ -75,23 +75,23 @@ def read_file():
 
     return q, p_objects
 
-def set_session_state(b):
+def set_session_state(b, page):
     st.session_state.b = b
+    st.session_state.page = page
 
 def get_session_state():
     if 'b' not in st.session_state:
-        return False
-    return st.session_state.b
+        st.session_state.b =  False
+    if 'page' not in st.session_state:
+        st.session_state.page = '1'
+    
+    return st.session_state.b, st.session_state.page
 
-def streamlit_app():
-    st.set_page_config(page_title="CPU Scheduling", page_icon="⏰", layout="centered")
-    st.image("header.png")
+def streamlit_app1():
     
-    b = get_session_state()
-    if b is False:
-        st.balloons()
-        set_session_state(True)
-    
+    st.title("Main Page")
+    st.markdown('---')
+
     #input file
     user_input = st.file_uploader("please upload your input txt file here or use the default data", type='txt')
     st.markdown("The file should follow the following structure:")
@@ -198,8 +198,33 @@ def streamlit_app():
                 st.table(df2_MLFQC)
 
     
-
+def streamlit_app2():
+    st.title("Graphs Page")
+    st.markdown('---')
+    avs.add_vertical_space(2)
+    st.markdown("yet to be done...")
 
 #main()
+st.set_page_config(page_title="CPU Scheduling", page_icon="⏰", layout="centered")
+st.image("header.png")
+    
+b, page = get_session_state()
 
-streamlit_app()
+if b is False:
+    st.balloons()
+    set_session_state(True)
+
+with st.sidebar:
+    st.header("Go to:")
+    if st.button("Main Page", use_container_width=True):
+        set_session_state(True, '1')
+
+    if st.button("Graphs Page", use_container_width=True):
+        set_session_state(True, '2')
+
+b, page = get_session_state()
+
+if page=='1':
+    streamlit_app1() #grant chart
+elif page=='2':
+    streamlit_app2() #graphs
