@@ -4,7 +4,8 @@ from scheduling.preePriority import PreemptivePriority
 import streamlit as st
 from streamlit_extras import add_vertical_space as avs
 import pandas as pd
-
+import numpy as np
+from time import sleep
 
 def main():
    
@@ -73,19 +74,24 @@ def read_file():
         p_obj = Process(*p)
         p_objects.append(p_obj)
 
+    f.close()
+
     return q, p_objects
 
-def set_session_state(b, page):
+def set_session_state(b, page, sim):
     st.session_state.b = b
     st.session_state.page = page
+    st.session_state.sim = sim
 
 def get_session_state():
     if 'b' not in st.session_state:
         st.session_state.b =  False
     if 'page' not in st.session_state:
         st.session_state.page = '1'
+    if 'sim' not in st.session_state:
+        st.session_state.sim = False
     
-    return st.session_state.b, st.session_state.page
+    return st.session_state.b, st.session_state.page, st.session_state.sim
 
 def streamlit_app1():
     
@@ -198,34 +204,208 @@ def streamlit_app1():
       
             st.table(df2_MLFQC)
 
+def simulate_pp():
+    # read the input file:
+    q, p_objects  = read_file()
+
+    #1. PP algo
+    pp = PreemptivePriority(p_objects)
+    pp.simulate_pp()
+    pp.calculate_average()
+
+    #store pp response times for all processes 
+    pp_rt = [i.rt for i in pp.processes]
+    #store pp waiting times for all processes 
+    pp_wt = [i.wt for i in pp.processes]
+    #store pp TAT times for all processes 
+    pp_tat = [i.tat for i in pp.processes]
+
+    return pp_rt, pp_wt, pp_tat, [pp.avg_rt, pp.avg_wt, pp.avg_tat]
+
+def simulate_mlfq():
+    # read the input file:
+    q, p_objects  = read_file()
+
+    #2. MLFQ algo
+    custom = Custom(p_objects, q)
+    custom.determine_queue()
+    custom.calculate_average()
+        
     
+    #store custom response times for all processes 
+    custom_rt = [i.rt for i in custom.processes]
+    #store custom waiting times for all processes 
+    custom_wt = [i.wt for i in custom.processes]
+    #store custom TAT times for all processes 
+    custom_tat = [i.tat for i in custom.processes]
+
+    return custom_rt, custom_wt, custom_tat, [custom.avg_rt, custom.avg_wt, custom.avg_tat]
 def streamlit_app2():
-    st.title("Graphs Page")
-    st.markdown('---')
-    avs.add_vertical_space(2)
-    st.markdown("yet to be done...")
+    b, page, sim = get_session_state()
+    tab_rt, tab_wt, tab_tat = st.tabs(["Response Time", "Waiting Time", "Turn Around Time"])
+
+    dataframe_pp_rt, dataframe_pp_wt, dataframe_pp_tat,pp_avg= simulate_pp()
+    sleep(1)
+    dataframe_mlfq_rt, dataframe_mlfq_wt, dataframe_mlfq_tat, custom_avg = simulate_mlfq()
+
+
+    # return a dataframe sutiable list
+    dataframe_rt = []
+    for i in range(len(dataframe_mlfq_rt)):
+        dataframe_rt.append([ i+1, dataframe_pp_rt[i], dataframe_mlfq_rt[i]])
+
+    dataframe_wt = []
+    for i in range(len(dataframe_mlfq_rt)):
+        dataframe_wt.append([i+1, dataframe_pp_wt[i], dataframe_mlfq_wt[i]])
+
+    dataframe_tat = []
+    for i in range(len(dataframe_mlfq_rt)):
+        dataframe_tat.append([i+1,dataframe_pp_tat[i], dataframe_mlfq_tat[i]])
+
+    set_session_state(b, page, True)
+
+    with tab_rt:
+        st.title("Graphs Page: Response Time")
+        avs.add_vertical_space(2)
+
+        # 1. display the average time winners:
+        average_rt = [custom_avg[0], pp_avg[0]]
+        average_rt.sort()
+
+        st.markdown("**LEADERBOARD**")
+        c1,c2,c3,c4 = st.columns(4)
+        with c1:
+            if average_rt[0] == custom_avg[0]:
+                st.markdown(f"🥇: MLFQ > {average_rt[0]}ms")
+            elif average_rt[0] == pp_avg[0]:
+                st.markdown(f"🥇: PP > {average_rt[0]}ms")
+
+        with c2:
+            if average_rt[1] == custom_avg[0]:
+                st.markdown(f"🥈: MLFQ > {average_rt[1]}ms")
+            elif average_rt[1] == pp_avg[0]:
+                st.markdown(f"🥈: PP > {average_rt[1]}ms")
+
+        st.markdown("---")
+
+        # 2. plot the response times for all the processes:
+        st.subheader(":blue[Response time for all the processes in all the algorithms]")
+        
+        chart_data = pd.DataFrame(
+        dataframe_rt,
+        columns = ['Response Time', 'PP', 'MLFQ'])
+
+        st.line_chart(
+            chart_data,
+            x = 'Response Time',
+            y = ['PP', 'MLFQ'],
+        )
+
+        df_rt = pd.DataFrame(dataframe_rt, columns=["PID", "PP", "MLFQ"])
+        st.table(df_rt)
+
+    with tab_wt:
+        st.title("Graphs Page: Waiting Time")
+        avs.add_vertical_space(2)
+
+        # 1. display the average time winners:
+        average_wt = [custom_avg[1], pp_avg[1]]
+        average_wt.sort()
+
+        st.markdown("**LEADERBOARD**")
+        c1,c2,c3,c4 = st.columns(4)
+        with c1:
+            if average_wt[0] == custom_avg[1]:
+                st.markdown(f"🥇: MLFQ > {average_wt[0]}ms")
+            elif average_rt[0] == pp_avg[1]:
+                st.markdown(f"🥇: PP > {average_wt[0]}ms")
+
+        with c2:
+            if average_wt[1] == custom_avg[1]:
+                st.markdown(f"🥈: MLFQ > {average_wt[1]}ms")
+            elif average_wt[1] == pp_avg[1]:
+                st.markdown(f"🥈: PP > {average_wt[1]}ms")
+
+        st.markdown("---")
+
+        # 2. plot the response times for all the processes:
+        st.subheader(":blue[Waiting time for all the processes in all the algorithms]")
+        
+        chart_data = pd.DataFrame(
+        dataframe_wt,
+        columns = ['Waiting Time', 'PP', 'MLFQ'])
+
+        st.line_chart(
+            chart_data,
+            x = 'Waiting Time',
+            y = ['PP', 'MLFQ'],
+        )
+
+        df_wt = pd.DataFrame(dataframe_wt, columns=["PID", "PP", "MLFQ"])
+        st.table(df_wt)
+
+    with tab_tat:
+        st.title("Graphs Page: Turn Around Time")
+        avs.add_vertical_space(2)
+
+        # 1. display the average time winners:
+        average_tat = [custom_avg[2], pp_avg[2]]
+        average_tat.sort()
+
+        st.markdown("**LEADERBOARD**")
+        c1,c2,c3,c4 = st.columns(4)
+        with c1:
+            if average_tat[0] == custom_avg[2]:
+                st.markdown(f"🥇: MLFQ > {average_tat[0]}ms")
+            elif average_rt[0] == pp_avg[2]:
+                st.markdown(f"🥇: PP > {average_tat[0]}ms")
+
+        with c2:
+            if average_tat[1] == custom_avg[2]:
+                st.markdown(f"🥈: MLFQ > {average_tat[1]}ms")
+            elif average_tat[1] == pp_avg[2]:
+                st.markdown(f"🥈: PP > {average_tat[1]}ms")
+
+        st.markdown("---")
+
+        # 2. plot the response times for all the processes:
+        st.subheader(":blue[TAT time for all the processes in all the algorithms]")
+        
+        chart_data = pd.DataFrame(
+        dataframe_tat,
+        columns = ['TAT Time', 'PP', 'MLFQ'])
+
+        st.line_chart(
+            chart_data,
+            x = 'TAT Time',
+            y = ['PP', 'MLFQ'],
+        )
+
+        df_wt = pd.DataFrame(dataframe_tat, columns=["PID", "PP", "MLFQ"])
+        st.table(df_wt)
+        
 
 #main()
 st.set_page_config(page_title="CPU Scheduling", page_icon="⏰", layout="centered")
 st.image("header.png")
     
-b, page = get_session_state()
+b, page, sim = get_session_state()
 
 if b is False:
     st.balloons()
-    set_session_state(True, '1')
+    set_session_state(True, '1', sim)
 
 with st.sidebar:
     st.header("Go to:")
     if st.button("Main Page", use_container_width=True):
-        set_session_state(True, '1')
+        set_session_state(True, '1', sim)
 
     if st.button("Graphs Page", use_container_width=True):
-        set_session_state(True, '2')
+        set_session_state(True, '2', sim)
 
-b, page = get_session_state()
+b, page, sim = get_session_state()
 
-if page=='1':
-    streamlit_app1() #grant chart
-elif page=='2':
+if page == '2':
     streamlit_app2() #graphs
+elif page == '1':
+    streamlit_app1()
