@@ -28,20 +28,19 @@ def read_file():
 
     return q, p_objects
 
-def set_session_state(b, page, sim):
+def set_session_state(b, page):
     st.session_state.b = b
     st.session_state.page = page
-    st.session_state.sim = sim
+
 
 def get_session_state():
     if 'b' not in st.session_state:
         st.session_state.b =  False
     if 'page' not in st.session_state:
         st.session_state.page = '1'
-    if 'sim' not in st.session_state:
-        st.session_state.sim = False
+
     
-    return st.session_state.b, st.session_state.page, st.session_state.sim
+    return st.session_state.b, st.session_state.page
 
 def streamlit_app1():
     
@@ -91,7 +90,13 @@ def streamlit_app1():
             preemptive.simulate_pp()
             preemptive.calculate_average()
 
-            columns_list = [' '+f' '*i for i,v in enumerate(preemptive.grant_chart)] #row number 1
+            #print new arraived tasks and the current system process:
+
+
+            #row number 1: start time-->finish time
+            avs.add_vertical_space(2)
+            st.subheader("FINAL GRANT CHART:")
+            columns_list = [f'{preemptive.gc_st[i]}ms -> {preemptive.gc_ft[i]}ms' for i,v in enumerate(preemptive.gc_ft)] 
             chart = tuple(preemptive.grant_chart),
             df1_PP = pd.DataFrame(chart,  columns=columns_list)
             st.table(df1_PP)
@@ -189,7 +194,7 @@ def simulate_mlfq():
     return custom_rt, custom_wt, custom_tat, [custom.avg_rt, custom.avg_wt, custom.avg_tat]
 
 def streamlit_app2():
-    b, page, sim = get_session_state()
+    b, page = get_session_state()
     tab_rt, tab_wt, tab_tat = st.tabs(["Response Time", "Waiting Time", "Turn Around Time"])
 
     dataframe_pp_rt, dataframe_pp_wt, dataframe_pp_tat,pp_avg= simulate_pp()
@@ -210,7 +215,6 @@ def streamlit_app2():
     for i in range(len(dataframe_mlfq_rt)):
         dataframe_tat.append([i+1,dataframe_pp_tat[i], dataframe_mlfq_tat[i]])
 
-    set_session_state(b, page, True)
 
     with tab_rt:
         st.title("Graphs Page: Response Time")
@@ -336,21 +340,21 @@ def streamlit_app2():
 st.set_page_config(page_title="CPU Scheduling", page_icon="⏰", layout="centered")
 st.image("header.png")
     
-b, page, sim = get_session_state()
+b, page = get_session_state()
 
 if b is False:
     st.balloons()
-    set_session_state(True, '1', sim)
+    set_session_state(True, '1')
 
 with st.sidebar:
     st.header("Go to:")
     if st.button("Main Page", use_container_width=True):
-        set_session_state(True, '1', sim)
+        set_session_state(True, '1')
 
     if st.button("Graphs Page", use_container_width=True):
-        set_session_state(True, '2', sim)
+        set_session_state(True, '2')
 
-b, page, sim = get_session_state()
+b, page = get_session_state()
 
 if page == '2':
     streamlit_app2() #graphs

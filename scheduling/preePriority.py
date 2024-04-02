@@ -1,4 +1,8 @@
 
+import streamlit as st
+import pandas as pd
+from streamlit_extras import add_vertical_space as avs
+
 class PreemptivePriority:
     def __init__(self, processes:list):
         self.processes = processes
@@ -6,21 +10,46 @@ class PreemptivePriority:
         self.avg_wt = 0
         self.avg_tat = 0
         self.grant_chart = []
+        self.current_time = 0
+
+        #these two lists are for grant chart printing format:
+        self.gc_ft = []
+        self.gc_st = [0]
+
+    def streamlit_print_gc(self, pid, waiting_q, running_p):
+        avs.add_vertical_space(1)
+        st.markdown(f":green[P{pid} process just arraived to the queue..]")
+    
+        if waiting_q !=[]:
+            pid_list = []
+            st.markdown(f"Time: {self.current_time}ms | :green[CURRENT RUNNING PROCESS: P{running_p.pid}]")
+            st.caption("Waiting queue (not prioritized):")
+            for i in waiting_q:
+                if i.pid != running_p.pid:
+                    pid_list.append(f'P{i.pid}')
+            
+            st.code(pid_list, language='python')
+        
+        avs.add_vertical_space(1)
 
     def simulate_pp(self):
-        current_time = 0
         waiting_queue = []
         temp_q = []
         prev_process = None
         process_completed = 0
 
         while True:
-            temp_q = [p for p in self.processes if p.at == current_time and p not in waiting_queue]
+            temp_q = [p for p in self.processes if p.at == self.current_time and p not in waiting_queue]
             waiting_queue.extend(temp_q)
 
             #get highest priority
             running_p = waiting_queue[0]
             running_p_index  = 0 
+
+            if temp_q != []:
+                # a new process have arravied
+                for i in temp_q:
+                    self.streamlit_print_gc(i.pid, waiting_queue, running_p)
             
             for p in waiting_queue[1:len(waiting_queue)]:
                 if p.priority < running_p.priority:
@@ -44,13 +73,13 @@ class PreemptivePriority:
                 process_completed+= 1
 
                 # set finish time:
-                running_p.ft = current_time
+                running_p.ft = self.current_time
 
                 # set the TAT 
                 running_p.tat = running_p.ft - running_p.at + 1
                 
 
-            if current_time == 0:
+            if self.current_time == 0:
                 # no prev process
                 # store the prev process so we dont print it in a row multiple times
                 prev_process = running_p
@@ -58,7 +87,7 @@ class PreemptivePriority:
                 #get response time:
                 if running_p.rt == 0 and f'P{running_p}' not in self.grant_chart:
                     # response time is calculated for the first burst 
-                    running_p.rt = current_time - running_p.at
+                    running_p.rt = self.current_time - running_p.at
 
                 #store the process in prev so we check again for context switch
                 prev_process = running_p 
@@ -72,19 +101,22 @@ class PreemptivePriority:
                 #get response time:
                 if running_p.rt == 0 and f'P{running_p}' not in self.grant_chart:
                     # response time is calculated for the first burst only
-                    running_p.rt = current_time - running_p.at
+                    running_p.rt = self.current_time - running_p.at
 
                 prev_process = running_p #store the process in prev so we check again for context switch
                 
                 #run the process:
                 self.grant_chart.append(f'P{running_p.pid}')
 
+                #append finish time to grant chart
+                self.gc_ft.append(self.current_time)
+                self.gc_st.append(self.current_time)
+
             #increment the time
-            current_time += 1
+            self.current_time += 1
 
             #check if the all the processes have ran:
             if process_completed == len(self.processes):
-                #print(f"\nAll processes have finished, Time needed: {current_time} ms")
                 return
             
     def calculate_average(self):
@@ -108,6 +140,9 @@ class PreemptivePriority:
             self.avg_tat += p.tat
 
         self.avg_tat = self.avg_tat/n
+
+        #add the last current time
+        self.gc_ft.append(self.current_time)
         
 
 
