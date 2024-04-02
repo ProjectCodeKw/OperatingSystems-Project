@@ -90,8 +90,9 @@ def streamlit_app1():
             preemptive = PreemptivePriority(processes_objs)
             preemptive.simulate_pp()
             preemptive.calculate_average()
-
-            columns_list = [' '+f' '*i for i,v in enumerate(preemptive.grant_chart)] #row number 1
+            
+            columns_list = [f'{v}' for i,v in enumerate(preemptive.get_time_chart())] #row number 1
+            st.write(preemptive.get_time_chart())
             chart = tuple(preemptive.grant_chart),
             df1_PP = pd.DataFrame(chart,  columns=columns_list)
             st.table(df1_PP)
