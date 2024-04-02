@@ -96,6 +96,7 @@ def streamlit_app1():
             #row number 1: start time-->finish time
             avs.add_vertical_space(2)
             st.subheader("FINAL GRANT CHART:")
+            st.markdown(f":green[CONTEXT SWITCH COUNT: {len(preemptive.grant_chart)-1}]")
             columns_list = [f'{preemptive.gc_st[i]}ms -> {preemptive.gc_ft[i]}ms' for i,v in enumerate(preemptive.gc_ft)] 
             chart = tuple(preemptive.grant_chart),
             df1_PP = pd.DataFrame(chart,  columns=columns_list)
