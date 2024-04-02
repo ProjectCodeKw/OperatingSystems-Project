@@ -1,3 +1,7 @@
+import streamlit as st
+import pandas as pd
+from streamlit_extras import add_vertical_space as avs
+
 class Custom:
     def __init__(self, processes:list, quantum:int):
         self.processes = processes
@@ -11,6 +15,10 @@ class Custom:
         self.current_time = 0
         self.process_completed = 0 
         self.quantum = quantum
+
+        #these two lists are for grant chart printing format:
+        self.gc_ft = []
+        self.gc_st = [0]
         
 
     def demote(self, demoted_p:object, demote_to:str):
@@ -25,7 +33,39 @@ class Custom:
             # add to Q3
             self.q3.append(demoted_p)
 
-    def preemprtive_priotity(self):
+    def streamlit_print_gc(self, pid, waiting_q1, running_p, page_no):
+        if page_no == "1":
+            avs.add_vertical_space(1)
+            st.markdown(f":green[P{pid} process just arraived to the queue..]")
+        
+            pid_q1 = []
+            pid_q3 = []
+            pid_q2 = []
+            st.markdown(f"Time: {self.current_time}ms | :green[CURRENT RUNNING PROCESS: P{running_p.pid}]")
+            st.caption("Waiting Q1 (Priotity):")
+            for i in waiting_q1:
+                if i.pid != running_p.pid:
+                    pid_q1.append(f'P{i.pid}')
+                
+            st.code(pid_q1, language='python')
+            
+            st.caption("Waiting Q2 (Round Robin):")
+            for i in self.q2:
+                if i.pid != running_p.pid:
+                    pid_q2.append(f'P{i.pid}')
+                
+            st.code(pid_q2, language='python')
+
+            st.caption("Waiting Q3 (FCFS):")
+            for i in self.q3:
+                if i.pid != running_p.pid:
+                    pid_q3.append(f'P{i.pid}')
+                
+            st.code(pid_q3, language='python')
+            
+            avs.add_vertical_space(1)
+
+    def preemprtive_priotity(self, page_no="1"):
         waiting_queue = []
         temp_q = []
         prev_process = None
@@ -35,11 +75,19 @@ class Custom:
             waiting_queue.extend(temp_q)    
 
             if self.q1 == []:
+                #append finish time to grant chart
+                self.gc_ft.append(self.current_time)
+                self.gc_st.append(self.current_time)
                 return -1
 
             #get highest priority
             running_p = waiting_queue[0]
             running_p_index  = 0 
+
+            if temp_q != []:
+                # a new process have arravied
+                for i in temp_q:
+                    self.streamlit_print_gc(i.pid, waiting_queue, running_p, page_no)
 
             #check if Q1 is empty:
             if waiting_queue == []:
@@ -121,6 +169,10 @@ class Custom:
                 #run the process:
                 self.grant_chart.append(f'Q1: P{running_p.pid}')
 
+                #append finish time to grant chart
+                self.gc_ft.append(self.current_time)
+                self.gc_st.append(self.current_time)
+
             #increment the time
             self.current_time += 1
 
@@ -128,6 +180,7 @@ class Custom:
     def round_robin(self, q1_next_p):
         q = self.quantum
         if q1_next_p == -1:
+            # self.q1 is empty thats why its -1
             stop_time = -1
         else:
             stop_time = q1_next_p.at
@@ -141,9 +194,11 @@ class Custom:
                     #demote the process
                     self.demote(demoted_p=running_p, demote_to='Q3')
 
-                    #add waiting time
+                    #append process finish and arraival times
+                    self.gc_ft.append(self.current_time)
+                    self.gc_st.append(self.current_time)
 
-                    return 'Q1'
+                    return 
                 
                 if running_p.bt != 0:
                     running_p.bt -= 1
@@ -158,7 +213,8 @@ class Custom:
                         process.wt += 1
 
 
-            if running_p.bt == 0 and self.current_time != stop_time:
+            if running_p.bt == 0:   
+                # process has been termindated
                 self.process_completed += 1
                 self.grant_chart.append(f'Q2: P{running_p.pid}')
                 #demote the process
@@ -167,9 +223,20 @@ class Custom:
                 # set the TAT 
                 running_p.tat = self.current_time - running_p.at 
 
-        return 'Q3'
-                    
+                #append process finish and arraival times
+                self.gc_ft.append(self.current_time)
+                self.gc_st.append(self.current_time)
 
+            #process needs to be demoted 
+            self.grant_chart.append(f'Q2: P{running_p.pid}')
+            #demote the process
+            self.demote(demoted_p=running_p, demote_to='Q3')
+            #append process finish and arraival times
+            self.gc_ft.append(self.current_time)
+            self.gc_st.append(self.current_time)
+            
+        return 
+                    
     
     def first_come_first_served(self, q1_next_p):
         
@@ -183,6 +250,9 @@ class Custom:
                 #check current time
                 if self.current_time == stop_time:
                     self.grant_chart.append(f'Q3: P{running_p.pid}')
+                    #append process finish and arraival times
+                    self.gc_ft.append(self.current_time)
+                    self.gc_st.append(self.current_time)
                     return
                 
                 running_p.bt -= 1
@@ -199,6 +269,10 @@ class Custom:
 
                 # set the TAT 
                 running_p.tat = self.current_time - running_p.at 
+
+                #append process finish and arraival times
+                self.gc_ft.append(self.current_time)
+                self.gc_st.append(self.current_time)
 
 
             if self.current_time == stop_time:
@@ -227,16 +301,17 @@ class Custom:
 
         self.avg_tat = self.avg_tat/n
 
-    def determine_queue(self):
+
+    def determine_queue(self, page_no):
 
         while self.process_completed < len(self.processes):
             #PP queue
             if self.q1 != []:
-                q1_next_p = self.preemprtive_priotity()
-            # demote the excuted processes that didnot terminate to Q2
-                
-            go_to = self.round_robin(q1_next_p)
+                q1_next_p = self.preemprtive_priotity(page_no)
 
-            if go_to == 'Q3':
+            if self.q2 != []:    
+                self.round_robin(q1_next_p)
+
+            if self.q1 == [] and self.q2 == []:
                 self.first_come_first_served(q1_next_p)
         

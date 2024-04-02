@@ -16,23 +16,24 @@ class PreemptivePriority:
         self.gc_ft = []
         self.gc_st = [0]
 
-    def streamlit_print_gc(self, pid, waiting_q, running_p):
-        avs.add_vertical_space(1)
-        st.markdown(f":green[P{pid} process just arraived to the queue..]")
-    
-        if waiting_q !=[]:
-            pid_list = []
-            st.markdown(f"Time: {self.current_time}ms | :green[CURRENT RUNNING PROCESS: P{running_p.pid}]")
-            st.caption("Waiting queue (not prioritized):")
-            for i in waiting_q:
-                if i.pid != running_p.pid:
-                    pid_list.append(f'P{i.pid}')
-            
-            st.code(pid_list, language='python')
+    def streamlit_print_gc(self, pid, waiting_q, running_p, page_no):
+        if page_no == "1":
+            avs.add_vertical_space(1)
+            st.markdown(f":green[P{pid} process just arraived to the queue..]")
         
-        avs.add_vertical_space(1)
+            if waiting_q !=[]:
+                pid_list = []
+                st.markdown(f"Time: {self.current_time}ms | :green[CURRENT RUNNING PROCESS: P{running_p.pid}]")
+                st.caption("Waiting queue (not prioritized):")
+                for i in waiting_q:
+                    if i.pid != running_p.pid:
+                        pid_list.append(f'P{i.pid}')
+                
+                st.code(pid_list, language='python')
+            
+            avs.add_vertical_space(1)
 
-    def simulate_pp(self):
+    def simulate_pp(self, page_no="1"):
         waiting_queue = []
         temp_q = []
         prev_process = None
@@ -49,7 +50,7 @@ class PreemptivePriority:
             if temp_q != []:
                 # a new process have arravied
                 for i in temp_q:
-                    self.streamlit_print_gc(i.pid, waiting_queue, running_p)
+                    self.streamlit_print_gc(i.pid, waiting_queue, running_p, page_no)
             
             for p in waiting_queue[1:len(waiting_queue)]:
                 if p.priority < running_p.priority:

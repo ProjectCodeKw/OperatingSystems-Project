@@ -87,7 +87,7 @@ def streamlit_app1():
             q, processes_objs = read_file()
             # test the preemptive scheduling
             preemptive = PreemptivePriority(processes_objs)
-            preemptive.simulate_pp()
+            preemptive.simulate_pp(page)
             preemptive.calculate_average()
 
             #print new arraived tasks and the current system process:
@@ -97,9 +97,9 @@ def streamlit_app1():
             avs.add_vertical_space(2)
             st.subheader("FINAL GRANT CHART:")
             st.markdown(f":green[CONTEXT SWITCH COUNT: {len(preemptive.grant_chart)-1}]")
-            columns_list = [f'{preemptive.gc_st[i]}ms -> {preemptive.gc_ft[i]}ms' for i,v in enumerate(preemptive.gc_ft)] 
+            columns_list = [f'{preemptive.gc_st[i]} -> {preemptive.gc_ft[i]}ms' for i,v in enumerate(preemptive.gc_ft)] 
             chart = tuple(preemptive.grant_chart),
-            df1_PP = pd.DataFrame(chart,  columns=columns_list)
+            df1_PP = pd.DataFrame(chart, [' ','  '],  columns=columns_list)
             st.table(df1_PP)
       
             avg_data_PP = [
@@ -108,7 +108,7 @@ def streamlit_app1():
                       (" TurnAround Time (ms)", preemptive.avg_tat)
                   ]
       
-            df2_PP = pd.DataFrame(avg_data_PP, columns=["Average", "Value"])
+            df2_PP = pd.DataFrame(avg_data_PP, [' ','  ', '   '], columns=["Average", "Value"])
       
             st.table(df2_PP)
 
@@ -136,14 +136,23 @@ def streamlit_app1():
             avs.add_vertical_space(2)
              # test the preemptive scheduling
             custom = Custom(processes_objs, q)
-            custom.determine_queue()
+            custom.determine_queue(page)
             custom.calculate_average()
 
+            #row number 1: start time-->finish time
+            avs.add_vertical_space(2)
+            st.subheader("FINAL GRANT CHART:")
+            st.markdown(f":green[CONTEXT SWITCH COUNT: {len(custom.grant_chart)-1}]")
+
             #fix the grand_chgart format for printing
+            time_list = [f'{custom.gc_st[i]} -> {custom.gc_ft[i]}ms' for i,v in enumerate(custom.gc_ft)]  #row number 3
             Q_list = [v[0:2]+f' '*i for i,v in enumerate(custom.grant_chart)] #row number 1
             p_list =  [i[4:len(i)] for i in custom.grant_chart] # row number 2
-            p_tuple = [tuple(p_list)]
-            df1_MLFQC = pd.DataFrame(p_tuple, columns=Q_list)
+            data_MLFQC = [
+                (p for p in p_list),
+                (t for t in time_list)
+            ]
+            df1_MLFQC = pd.DataFrame(data_MLFQC, [' ', '  '], columns=Q_list)
             st.table(df1_MLFQC)
                 
             avg_data_MLFQC = [
@@ -152,9 +161,7 @@ def streamlit_app1():
                       (" TurnAround Time (ms)", custom.avg_tat)
                   ]
 
-
-            df2_MLFQC = pd.DataFrame(avg_data_MLFQC, columns=["Average", "Value"])
-      
+            df2_MLFQC = pd.DataFrame(avg_data_MLFQC,  [' ','  ', '   '], columns=["Average", "Value"])
             st.table(df2_MLFQC)
 
 def simulate_pp():
@@ -163,7 +170,7 @@ def simulate_pp():
 
     #1. PP algo
     pp = PreemptivePriority(p_objects)
-    pp.simulate_pp()
+    pp.simulate_pp(page)
     pp.calculate_average()
 
     #store pp response times for all processes 
@@ -181,7 +188,7 @@ def simulate_mlfq():
 
     #2. MLFQ algo
     custom = Custom(p_objects, q)
-    custom.determine_queue()
+    custom.determine_queue(page)
     custom.calculate_average()
         
     
@@ -225,7 +232,7 @@ def streamlit_app2():
         average_rt = [custom_avg[0], pp_avg[0]]
         average_rt.sort()
 
-        st.markdown("**LEADERBOARD**")
+        st.markdown("**:green[LEADERBOARD]**")
         c1,c2,c3,c4 = st.columns(4)
         with c1:
             if average_rt[0] == custom_avg[0]:
@@ -242,7 +249,12 @@ def streamlit_app2():
         st.markdown("---")
 
         # 2. plot the response times for all the processes:
-        st.subheader(":blue[Response time for all the processes in all the algorithms]")
+        st.subheader(":green[Response time for all the processes in all the algorithms]")
+        c1,c2,c3,c4 = st.columns(4)
+        with c3:
+            st.caption("X-axis is PID")
+        with c2:
+            st.caption("Y-axis is REPONSE TIME")
         
         chart_data = pd.DataFrame(
         dataframe_rt,
@@ -252,9 +264,10 @@ def streamlit_app2():
             chart_data,
             x = 'Process PID (starting from 1)',
             y = ['PP', 'MLFQ'],
+            color=['#8bd8bd', '#3b8a0b']
         )
 
-        df_rt = pd.DataFrame(dataframe_rt, columns=["PID", "PP", "MLFQ"])
+        df_rt = pd.DataFrame(dataframe_rt, [' ','  ','   ','    ','   '] , columns=["PID", "PP", "MLFQ"])
         st.table(df_rt)
 
     with tab_wt:
@@ -265,7 +278,7 @@ def streamlit_app2():
         average_wt = [custom_avg[1], pp_avg[1]]
         average_wt.sort()
 
-        st.markdown("**LEADERBOARD**")
+        st.markdown("**:green[LEADERBOARD]**")
         c1,c2,c3,c4 = st.columns(4)
         with c1:
             if average_wt[0] == custom_avg[1]:
@@ -282,7 +295,12 @@ def streamlit_app2():
         st.markdown("---")
 
         # 2. plot the response times for all the processes:
-        st.subheader(":blue[Waiting time for all the processes in all the algorithms]")
+        st.subheader(":green[Waiting time for all the processes in all the algorithms]")
+        c1,c2,c3,c4 = st.columns(4)
+        with c3:
+            st.caption("X-axis is PID")
+        with c2:
+            st.caption("Y-axis is WAITING TIME")
         
         chart_data = pd.DataFrame(
         dataframe_wt,
@@ -292,9 +310,10 @@ def streamlit_app2():
             chart_data,
             x = 'Process PID (starting from 1)',
             y = ['PP', 'MLFQ'],
+            color=['#8bd8bd', '#3b8a0b']
         )
 
-        df_wt = pd.DataFrame(dataframe_wt, columns=["PID", "PP", "MLFQ"])
+        df_wt = pd.DataFrame(dataframe_wt, [' ','  ','   ','    ','   '], columns=["PID", "PP", "MLFQ"])
         st.table(df_wt)
 
     with tab_tat:
@@ -305,7 +324,7 @@ def streamlit_app2():
         average_tat = [custom_avg[2], pp_avg[2]]
         average_tat.sort()
 
-        st.markdown("**LEADERBOARD**")
+        st.markdown("**:green[LEADERBOARD]**")
         c1,c2,c3,c4 = st.columns(4)
         with c1:
             if average_tat[0] == custom_avg[2]:
@@ -322,7 +341,12 @@ def streamlit_app2():
         st.markdown("---")
 
         # 2. plot the response times for all the processes:
-        st.subheader(":blue[TAT time for all the processes in all the algorithms]")
+        st.subheader(":green[TAT time for all the processes in all the algorithms]")
+        c1,c2,c3,c4 = st.columns(4)
+        with c3:
+            st.caption("X-axis is PID")
+        with c2:
+            st.caption("Y-axis is TAT TIME")
         
         chart_data = pd.DataFrame(
         dataframe_tat,
@@ -332,9 +356,10 @@ def streamlit_app2():
             chart_data,
             x = 'Process PID (starting from 1)',
             y = ['PP', 'MLFQ'],
+            color=['#8bd8bd', '#3b8a0b']
         )
 
-        df_wt = pd.DataFrame(dataframe_tat, columns=["PID", "PP", "MLFQ"])
+        df_wt = pd.DataFrame(dataframe_tat, [' ','  ','   ','    ','   '], columns=["PID", "PP", "MLFQ"])
         st.table(df_wt)
         
         
