@@ -116,11 +116,14 @@ def streamlit_app1():
         algo = "Round Robin"
         #title 
         st.subheader(algo)
+        st.markdown("Soon...")
+
 
     with tab_c:
         algo = "Shortest Remaining Time First "
         #title 
         st.subheader(algo)
+        st.markdown("Soon...")
 
     with tab_d:
         algo = "Multi-level Feedback Queue Custom"
