@@ -15,6 +15,7 @@ class Custom:
         self.current_time = 0
         self.process_completed = 0 
         self.quantum = quantum
+        self.time_record = [] # keep track of the time printed in streamlit_print_gc()
 
         #these two lists are for grant chart printing format:
         self.gc_ft = []
@@ -33,37 +34,80 @@ class Custom:
             # add to Q3
             self.q3.append(demoted_p)
 
-    def streamlit_print_gc(self, pid, waiting_q1, running_p, page_no):
+    def streamlit_print_gc(self, pid, waiting_q1, running_p, page_no, next_running_p):
         if page_no == "1":
+
+            if self.current_time not in self.time_record:
+                if self.current_time != 0: st.markdown('---')
+                c1,c2,c3 = st.columns(3)
+                with c2:
+                    st.subheader(f"Time⏰: {self.current_time}ms")
+
+            waiting_q1 = waiting_q1.copy()
             avs.add_vertical_space(1)
-            st.markdown(f":green[P{pid} process just arraived to the queue..]")
-        
+            st.markdown(f"<span style='color:yellow;'>⚠️🚗 P{pid} process just arrived to the queue..</span>", unsafe_allow_html=True)        
             pid_q1 = []
             pid_q3 = []
             pid_q2 = []
-            st.markdown(f"Time: {self.current_time}ms | :green[CURRENT RUNNING PROCESS: P{running_p.pid}]")
-            st.caption("Waiting Q1 (Priotity):")
-            for i in waiting_q1:
-                if i.pid != running_p.pid:
-                    pid_q1.append(f'P{i.pid}')
-                
-            st.code(pid_q1, language='python')
             
-            st.caption("Waiting Q2 (Round Robin):")
-            for i in self.q2:
-                if i.pid != running_p.pid:
-                    pid_q2.append(f'P{i.pid}')
-                
-            st.code(pid_q2, language='python')
+            if waiting_q1 !=[]:
+                pid_list = []
+                try:
+                    waiting_q1.remove(next_running_p)
+                except ValueError: pass
 
-            st.caption("Waiting Q3 (FCFS):")
-            for i in self.q3:
-                if i.pid != running_p.pid:
-                    pid_q3.append(f'P{i.pid}')
+                if running_p in self.q1:
+                    st.markdown(f":green[CURRENT RUNNING PROCESS: Q1: P{running_p.pid}({running_p.bt}, {running_p.priority})]")
+                elif running_p in self.q2:
+                    st.markdown(f":green[CURRENT RUNNING PROCESS: Q2: P{running_p.pid}({running_p.bt}, {running_p.priority})]")
+                else:
+                    st.markdown(f":green[CURRENT RUNNING PROCESS: Q3: P{running_p.pid}({running_p.bt}, {running_p.priority})]")
+
+                st.caption("Waiting Q1 (Priotity):")
+                for i in waiting_q1:
+                    if i.pid != running_p.pid:
+                        pid_q1.append(f'P{i.pid}')
+                    
+                st.code(pid_q1, language='python')
                 
-            st.code(pid_q3, language='python')
+                st.caption("Waiting Q2 (Round Robin):")
+                for i in self.q2:
+                    if i.pid != running_p.pid:
+                        pid_q2.append(f'P{i.pid}')
+                    
+                st.code(pid_q2, language='python')
+
+                st.caption("Waiting Q3 (FCFS):")
+                for i in self.q3:
+                    if i.pid != running_p.pid:
+                        pid_q3.append(f'P{i.pid}')
+                    
+                st.code(pid_q3, language='python')
+
+            if self.grant_chart != []:
+                if next_running_p == running_p:
+                    st.markdown("**Current Grant chart with the running processes:**")
+                else:
+                    st.markdown(f"**Grant chart after prioritizing Q1: P{next_running_p.pid}({next_running_p.bt}, {next_running_p.priority})**")
+
+                #fix the grand_chgart format for printing
+                temp_ft = self.gc_ft.copy()
+                temp_ft.append(self.current_time)
+                time_list = [f'{self.gc_st[i]} -> {temp_ft[i]}ms' for i,v in enumerate(temp_ft)]  #row number 3
+                Q_list = [v[0:2]+f' '*i for i,v in enumerate(self.grant_chart)] #row number 1
+                p_list =  [i[4:len(i)] for i in self.grant_chart] # row number 2
+                data_MLFQC = [
+                        (t for t in time_list),
+                        (p for p in p_list)
+                ]
+                df1_MLFQC = pd.DataFrame(data_MLFQC, ['Time', 'Process'], columns=Q_list)
+                st.table(df1_MLFQC)
+
+
+                    
             
-            avs.add_vertical_space(1)
+        if self.current_time not in self.time_record:
+                self.time_record.append(self.current_time)
 
     def preemprtive_priotity(self, page_no="1"):
         waiting_queue = []
@@ -84,11 +128,6 @@ class Custom:
             running_p = waiting_queue[0]
             running_p_index  = 0 
 
-            if temp_q != []:
-                # a new process have arravied
-                for i in temp_q:
-                    self.streamlit_print_gc(i.pid, waiting_queue, running_p, page_no)
-
             #check if Q1 is empty:
             if waiting_queue == []:
                 # go to Q2
@@ -96,7 +135,7 @@ class Custom:
                 return self.q1[self.q1.index(running_p)+1]
 
             for p in waiting_queue[1:len(waiting_queue)]:
-                
+                # get highest priority
                 if p.priority < running_p.priority:
                     #check if the process ran:
                     if f'Q1: P{running_p.pid}' in self.grant_chart:
@@ -109,6 +148,16 @@ class Custom:
                     # change current running process
                     running_p = p
                     running_p_index = waiting_queue.index(p)
+
+            if self.current_time == 0:
+                # no prev process
+                # store the prev process so we dont print it in a row multiple times
+                prev_process = running_p
+
+            if temp_q != []:
+                # a new process have arravied
+                for i in temp_q:
+                    self.streamlit_print_gc(i.pid, waiting_queue, prev_process, page_no, running_p)
 
             
             # subtract the BT from the running process

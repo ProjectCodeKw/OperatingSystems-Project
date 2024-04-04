@@ -82,24 +82,25 @@ def streamlit_app1():
         algo = "Preemptive Priority"
         #title 
         st.subheader(algo)
-        
         if st.button(f"Simulate PP Scheduling", use_container_width=True):
+            avs.add_vertical_space(2)
             q, processes_objs = read_file()
             # test the preemptive scheduling
             preemptive = PreemptivePriority(processes_objs)
             preemptive.simulate_pp(page)
             preemptive.calculate_average()
 
-            #print new arraived tasks and the current system process:
-
-
             #row number 1: start time-->finish time
-            avs.add_vertical_space(2)
+            avs.add_vertical_space(1)
+            st.markdown('---')
             st.subheader("FINAL GRANT CHART:")
             st.markdown(f":green[CONTEXT SWITCH COUNT: {len(preemptive.grant_chart)-1}]")
-            columns_list = [f'{preemptive.gc_st[i]} -> {preemptive.gc_ft[i]}ms' for i,v in enumerate(preemptive.gc_ft)] 
-            chart = tuple(preemptive.grant_chart),
-            df1_PP = pd.DataFrame(chart, [' ','  '],  columns=columns_list)
+            time_list = [f'{preemptive.gc_st[i]} -> {preemptive.gc_ft[i]}ms' for i,v in enumerate(preemptive.gc_ft)] 
+            p_list =  [i for i in preemptive.grant_chart] 
+            data_PP = [
+                tuple(p_list),
+            ]
+            df1_PP = pd.DataFrame(data_PP, ['Process'],  columns=time_list)
             st.table(df1_PP)
       
             avg_data_PP = [
@@ -144,6 +145,7 @@ def streamlit_app1():
 
             #row number 1: start time-->finish time
             avs.add_vertical_space(2)
+            st.markdown('---')
             st.subheader("FINAL GRANT CHART:")
             st.markdown(f":green[CONTEXT SWITCH COUNT: {len(custom.grant_chart)-1}]")
 
@@ -152,10 +154,10 @@ def streamlit_app1():
             Q_list = [v[0:2]+f' '*i for i,v in enumerate(custom.grant_chart)] #row number 1
             p_list =  [i[4:len(i)] for i in custom.grant_chart] # row number 2
             data_MLFQC = [
-                (p for p in p_list),
-                (t for t in time_list)
+                (t for t in time_list),
+                (p for p in p_list)
             ]
-            df1_MLFQC = pd.DataFrame(data_MLFQC, [' ', '  '], columns=Q_list)
+            df1_MLFQC = pd.DataFrame(data_MLFQC, ['Time', 'Process'], columns=Q_list)
             st.table(df1_MLFQC)
                 
             avg_data_MLFQC = [
