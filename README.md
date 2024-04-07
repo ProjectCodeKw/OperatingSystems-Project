@@ -24,7 +24,7 @@
    
    **If you got an error it means the library was not installed correctly**
    
-   **a vidoe that might help you install streamlit if this problem occured:*
+   *a video that might help you install streamlit if this problem occured:*
    
    --> https://youtu.be/Uloc4Z0SUks?si=KZmxrbT8ycPoyK7q
 
