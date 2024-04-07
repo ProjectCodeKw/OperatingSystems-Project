@@ -29,7 +29,7 @@
    --> https://youtu.be/Uloc4Z0SUks?si=KZmxrbT8ycPoyK7q
 
 5. Download the zip file for this repositary from Github
-6. Un-Zip the folder on your machine using the default un-zipper or download zip7 program if you danot have one
+6. Un-Zip the folder on your machine using the default un-zipper or download zip7 program if you do not have one
 7. Drag and drop your folder into VS code enviroment
 8. Make sure to select the Python interpetor that you previously downloaded the libraries on
 9. using the VS code terminal run the following command:
