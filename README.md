@@ -11,9 +11,7 @@
    `pip install streamlit-extras`
    
    `pip install pandas`
-   
-   `pip install numpy`
-   
+      
 
 3. Check the installation for the libraries
    
