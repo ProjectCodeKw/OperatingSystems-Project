@@ -1,7 +1,7 @@
-#CPU SCHEDULING ALGORITHMS SIMULATOR
+# CPU SCHEDULING ALGORITHMS SIMULATOR
 *Assumung you have VS code and Python installed in your deviece already*
 
-##To run the website interface on your local machine do the following steps:
+## To run the website interface on your local machine do the following steps:
 
 1. Download the following libraries in your VS code terminal:
    run the following commands:
@@ -27,7 +27,7 @@
 
 CONGRATS NOW THE WEBSITE SHOULD APPEAR ON YOUR LOCACL HOST WEB PAGE.
 
-##To display the plots only without a website interface (plot the diffrences between the algorithms)
+## To display the plots only without a website interface (plot the diffrences between the algorithms)
 run the following command:
 WINDOWS: `python pyplot.py`
 MAC: `python3 pyplot.py`
