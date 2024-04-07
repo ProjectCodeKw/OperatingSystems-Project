@@ -3,7 +3,7 @@
 
 ## To run the website interface on your local machine do the following steps:
 
-1. Download the following libraries in your VS code terminal:
+1. Download the following libraries in your VS code terminal,
    run the following commands:
    
    `pip install streamlit`
@@ -17,12 +17,15 @@
    `pip install numpy`
 
 3. Check the installation for the libraries
+   
    run the following command for all the libraries you just installed:
    
    `library_name --version`
    
    **If you got an error it means the library was not installed correctly**
+   
    **a vidoe that might help you install streamlit if this problem occured:*
+   
    --> https://youtu.be/Uloc4Z0SUks?si=KZmxrbT8ycPoyK7q
 
 5. Download the zip file for this repositary from Github
@@ -36,6 +39,7 @@
 CONGRATS NOW THE WEBSITE SHOULD APPEAR ON YOUR LOCACL HOST WEB PAGE.
 
 ## To display the plots only without a website interface (plot the diffrences between the algorithms)
+
 run the following command:
 
 WINDOWS: `python pyplot.py`
