@@ -14,7 +14,6 @@
    
    `pip install numpy`
    
-   `pip install numpy`
 
 3. Check the installation for the libraries
    
