@@ -66,21 +66,21 @@ class Custom:
                 st.caption("Waiting Q1 (Priotity):")
                 for i in waiting_q1:
                     if i.pid != running_p.pid:
-                        pid_q1.append(f'P{i.pid}')
+                        pid_q1.append(f'P{i.pid}({i.bt}, {i.priority})')
                     
                 st.code(pid_q1, language='python')
                 
                 st.caption("Waiting Q2 (Round Robin):")
                 for i in self.q2:
                     if i.pid != running_p.pid:
-                        pid_q2.append(f'P{i.pid}')
+                        pid_q2.append(f'P{i.pid}({i.bt}, {i.priority})')
                     
                 st.code(pid_q2, language='python')
 
                 st.caption("Waiting Q3 (FCFS):")
                 for i in self.q3:
                     if i.pid != running_p.pid:
-                        pid_q3.append(f'P{i.pid}')
+                        pid_q3.append(f'P{i.pid}({i.bt}, {i.priority})')
                     
                 st.code(pid_q3, language='python')
 
