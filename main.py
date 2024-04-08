@@ -195,7 +195,6 @@ def simulate_mlfq():
     custom = Custom(p_objects, q)
     custom.determine_queue(page)
     custom.calculate_average()
-        
     
     #store custom response times for all processes 
     custom_rt = [i.rt for i in custom.processes]
