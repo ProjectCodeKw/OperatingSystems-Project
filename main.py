@@ -5,7 +5,7 @@ import streamlit as st
 from streamlit_extras import add_vertical_space as avs
 import pandas as pd
 from time import sleep
-    
+from scheduling.roundrobin import RoundRobin
 
 def read_file():
     # returns a list of process objects
@@ -81,43 +81,71 @@ def streamlit_app1():
         algo = "Preemptive Priority"
         #title 
         st.subheader(algo)
-        if st.button(f"Simulate PP Scheduling", use_container_width=True):
-            avs.add_vertical_space(2)
-            q, processes_objs = read_file()
-            # test the preemptive scheduling
-            preemptive = PreemptivePriority(processes_objs)
-            preemptive.simulate_pp(page)
-            preemptive.calculate_average()
+        avs.add_vertical_space(2)
+        q, processes_objs = read_file()
+        # test the preemptive scheduling
+        preemptive = PreemptivePriority(processes_objs)
+        preemptive.simulate_pp(page)
+        preemptive.calculate_average()
 
-            #row number 1: start time-->finish time
-            avs.add_vertical_space(1)
-            st.markdown('---')
-            st.subheader("FINAL GRANT CHART:")
-            st.markdown(f":green[CONTEXT SWITCH COUNT: {len(preemptive.grant_chart)-1}]")
-            time_list = [f'{preemptive.gc_st[i]} -> {preemptive.gc_ft[i]}ms' for i,v in enumerate(preemptive.gc_ft)] 
-            p_list =  [i for i in preemptive.grant_chart] 
-            data_PP = [
+        #row number 1: start time-->finish time
+        avs.add_vertical_space(1)
+        st.markdown('---')
+        st.subheader("FINAL GRANT CHART:")
+        st.markdown(f":green[CONTEXT SWITCH COUNT: {len(preemptive.grant_chart)-1}]")
+        time_list = [f'{preemptive.gc_st[i]} -> {preemptive.gc_ft[i]}ms' for i,v in enumerate(preemptive.gc_ft)] 
+        p_list =  [i for i in preemptive.grant_chart] 
+        data_PP = [
                 tuple(p_list),
             ]
-            df1_PP = pd.DataFrame(data_PP, ['Process'],  columns=time_list)
-            st.table(df1_PP)
-      
-            avg_data_PP = [
+        df1_PP = pd.DataFrame(data_PP, ['Process'],  columns=time_list)
+        st.table(df1_PP)
+    
+        avg_data_PP = [
                       (" Response Time (ms)", preemptive.avg_rt),
                       (" Waiting Time (ms)", preemptive.avg_wt),
                       (" TurnAround Time (ms)", preemptive.avg_tat)
                   ]
       
-            df2_PP = pd.DataFrame(avg_data_PP, [' ','  ', '   '], columns=["Average", "Value"])
+        df2_PP = pd.DataFrame(avg_data_PP, [' ','  ', '   '], columns=["Average", "Value"])
       
-            st.table(df2_PP)
+        st.table(df2_PP)
 
     with tab_b:
         algo = "Round Robin"
         #title 
         st.subheader(algo)
-        st.markdown("Soon...")
 
+        avs.add_vertical_space(2)
+        q, processes_objs = read_file()
+        # test the preemptive scheduling
+        RR = RoundRobin(processes_objs, q)
+        RR.round_robin()
+
+        #row number 1: start time-->finish time
+        avs.add_vertical_space(1)
+        st.markdown('---')
+        st.subheader("FINAL GRANT CHART:")
+        st.markdown(f":green[CONTEXT SWITCH COUNT: {len(RR.grant_chart)-1}]")
+        time_list = [f'{RR.gc_st[i]} -> {RR.gc_ft[i]}ms' for i,v in enumerate(RR.gc_ft)] 
+        p_list =  [i for i in RR.grant_chart] 
+        data_RR = [
+                tuple(p_list),
+            ]
+        st.write(data_RR)
+        st.write(time_list)
+        #df1_RR = pd.DataFrame(data_RR, ['Process'],  columns=time_list)
+        #st.table(df1_RR)
+    
+        avg_data_RR = [
+                      (" Response Time (ms)", RR.avg_rt),
+                      (" Waiting Time (ms)", RR.avg_wt),
+                      (" TurnAround Time (ms)", RR.avg_tat)
+                  ]
+      
+
+        #df2_RR = pd.DataFrame(avg_data_RR, [' ','  ', '   '], columns=["Average", "Value"])
+        #st.table(df2_RR)
 
     with tab_c:
         algo = "Shortest Remaining Time First "
@@ -130,43 +158,42 @@ def streamlit_app1():
         #title 
         st.subheader(algo)
         
-        if st.button(f"Simulate MLFQC Scheduling", use_container_width=True):
-            q, processes_objs = read_file()
-            st.markdown("This scheduler offers the following algorithms (preemptive): ")
-            st.code("> Preemptive Priority (highest priority queue: Q1)", language='python')
-            st.code(f"> Round Robin w/ q={q} (medium priority queue: Q2)",  language='python')
-            st.code("> First Come First Served (lowest priority queue: Q3)",  language='python')
-            avs.add_vertical_space(2)
-             # test the preemptive scheduling
-            custom = Custom(processes_objs, q)
-            custom.determine_queue(page)
-            custom.calculate_average()
+        q, processes_objs = read_file()
+        st.markdown("This scheduler offers the following algorithms (preemptive): ")
+        st.code("> Preemptive Priority (highest priority queue: Q1)", language='python')
+        st.code(f"> Round Robin w/ q={q} (medium priority queue: Q2)",  language='python')
+        st.code("> First Come First Served (lowest priority queue: Q3)",  language='python')
+        avs.add_vertical_space(2)
+         # test the preemptive scheduling
+        custom = Custom(processes_objs, q)
+        custom.determine_queue(page)
+        custom.calculate_average()
 
-            #row number 1: start time-->finish time
-            avs.add_vertical_space(2)
-            st.markdown('---')
-            st.subheader("FINAL GRANT CHART:")
-            st.markdown(f":green[CONTEXT SWITCH COUNT: {len(custom.grant_chart)-1}]")
+        #row number 1: start time-->finish time
+        avs.add_vertical_space(2)
+        st.markdown('---')
+        st.subheader("FINAL GRANT CHART:")
+        st.markdown(f":green[CONTEXT SWITCH COUNT: {len(custom.grant_chart)-1}]")
 
-            #fix the grand_chgart format for printing
-            time_list = [f'{custom.gc_st[i]} -> {custom.gc_ft[i]}ms' for i,v in enumerate(custom.gc_ft)]  #row number 3
-            Q_list = [v[0:2]+f' '*i for i,v in enumerate(custom.grant_chart)] #row number 1
-            p_list =  [i[4:len(i)] for i in custom.grant_chart] # row number 2
-            data_MLFQC = [
+        #fix the grand_chgart format for printing
+        time_list = [f'{custom.gc_st[i]} -> {custom.gc_ft[i]}ms' for i,v in enumerate(custom.gc_ft)]  #row number 3
+        Q_list = [v[0:2]+f' '*i for i,v in enumerate(custom.grant_chart)] #row number 1
+        p_list =  [i[4:len(i)] for i in custom.grant_chart] # row number 2
+        data_MLFQC = [
                 (t for t in time_list),
                 (p for p in p_list)
             ]
-            df1_MLFQC = pd.DataFrame(data_MLFQC, ['Time', 'Process'], columns=Q_list)
-            st.table(df1_MLFQC)
+        df1_MLFQC = pd.DataFrame(data_MLFQC, ['Time', 'Process'], columns=Q_list)
+        st.table(df1_MLFQC)
                 
-            avg_data_MLFQC = [
+        avg_data_MLFQC = [
                       (" Response Time (ms)", custom.avg_rt),
                       (" Waiting Time (ms)", custom.avg_wt),
                       (" TurnAround Time (ms)", custom.avg_tat)
                   ]
 
-            df2_MLFQC = pd.DataFrame(avg_data_MLFQC,  [' ','  ', '   '], columns=["Average", "Value"])
-            st.table(df2_MLFQC)
+        df2_MLFQC = pd.DataFrame(avg_data_MLFQC,  [' ','  ', '   '], columns=["Average", "Value"])
+        st.table(df2_MLFQC)
 
 def simulate_pp():
     # read the input file:

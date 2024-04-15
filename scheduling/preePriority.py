@@ -17,6 +17,8 @@ class PreemptivePriority:
         self.gc_ft = []
         self.gc_st = [0]
 
+        
+
     def streamlit_print_gc(self, pid, waiting_q, running_p, page_no, next_running_p):
         if page_no == "1":
             
@@ -36,7 +38,7 @@ class PreemptivePriority:
                 except ValueError:
                     pass
                 st.markdown(f":green[CURRENT RUNNING PROCESS: P{running_p.pid}({running_p.bt}, {running_p.priority})]")
-                st.caption("Waiting queue ")
+                st.caption("Ready queue")
                 for i in waiting_q:
                     if i.pid != running_p.pid:
                         pid_list.append(f'P{i.pid}({i.bt}, {i.priority})')
