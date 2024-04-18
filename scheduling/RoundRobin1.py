@@ -2,8 +2,8 @@ import streamlit as st
 from streamlit_extras import add_vertical_space as avs
 
 class RoundRobin:
-    def __init__(self, filepath):
-        self.p,self.quantim = self.read_processes(filepath)
+    def __init__(self, filepath, page_no="1"):
+        self.p,self.quantim = self.read_processes(filepath, page_no)
         self.num_of_processes = len(self.p)
         self.BT = [i[1] for i in self.p]  # Burst Time (corrected index based on file input structure)
         self.AT = [i[0] for i in self.p]  # Arrival Time
@@ -43,7 +43,7 @@ class RoundRobin:
 
                 if self.execution_time[i] == -1:  # if it is the first execution of the process
                     self.execution_time[i] = self.time_passed   #save the start time of the process execution
-                    self.RT[i] = self.time_passed - self.AT[i]  #calculate responce time
+                    self.RT[i] = abs(self.time_passed - self.AT[i])  #calculate responce time
 
                 #execute the process for the quantum or until it finishes
                 exec_time = min(self.BT[i], self.quantim)
