@@ -14,7 +14,7 @@ class Custom:
         self.q3 = [] #FCFS (priority = 3)
         self.current_time = 0
         self.process_completed = 0 
-        self.quantum = quantum
+        self.quantum = 4
         self.time_record = [] # keep track of the time printed in streamlit_print_gc()
 
         #these two lists are for grant chart printing format:
