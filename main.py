@@ -5,7 +5,7 @@ import streamlit as st
 from streamlit_extras import add_vertical_space as avs
 import pandas as pd
 from time import sleep
-from scheduling.roundrobin import RoundRobin
+from scheduling.RoundRobin1 import RoundRobin
 
 def read_file():
     # returns a list of process objects
@@ -117,35 +117,17 @@ def streamlit_app1():
         st.subheader(algo)
 
         avs.add_vertical_space(2)
-        q, processes_objs = read_file()
-        # test the preemptive scheduling
-        RR = RoundRobin(processes_objs, q)
-        RR.round_robin()
-
-        #row number 1: start time-->finish time
-        avs.add_vertical_space(1)
-        st.markdown('---')
-        st.subheader("FINAL GRANT CHART:")
-        st.markdown(f":green[CONTEXT SWITCH COUNT: {len(RR.grant_chart)-1}]")
-        time_list = [f'{RR.gc_st[i]} -> {RR.gc_ft[i]}ms' for i,v in enumerate(RR.gc_ft)] 
-        p_list =  [i for i in RR.grant_chart] 
-        data_RR = [
-                tuple(p_list),
-            ]
-        st.write(data_RR)
-        st.write(time_list)
-        #df1_RR = pd.DataFrame(data_RR, ['Process'],  columns=time_list)
-        #st.table(df1_RR)
-    
+        rr = RoundRobin("input.txt")
+        Avg_WT, Avg_TAT, Avg_RT = rr.schedule(page_no="1")
         avg_data_RR = [
-                      (" Response Time (ms)", RR.avg_rt),
-                      (" Waiting Time (ms)", RR.avg_wt),
-                      (" TurnAround Time (ms)", RR.avg_tat)
+                      (" Response Time (ms)", Avg_RT),
+                      (" Waiting Time (ms)", Avg_WT),
+                      (" TurnAround Time (ms)", Avg_TAT)
                   ]
       
-
-        #df2_RR = pd.DataFrame(avg_data_RR, [' ','  ', '   '], columns=["Average", "Value"])
-        #st.table(df2_RR)
+        df2_RR = pd.DataFrame(avg_data_RR, [' ','  ', '   '], columns=["Average", "Value"])
+        avs.add_vertical_space(2)
+        st.table(df2_RR)
 
     with tab_c:
         algo = "Shortest Remaining Time First "
