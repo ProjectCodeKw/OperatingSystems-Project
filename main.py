@@ -154,7 +154,7 @@ def streamlit_app1():
         q, processes_objs = read_file()
         st.markdown("This scheduler offers the following algorithms (preemptive): ")
         st.code("> Preemptive Priority (highest priority queue: Q1)", language='python')
-        st.code(f"> Round Robin w/ q={q} (medium priority queue: Q2)",  language='python')
+        st.code(f"> Round Robin w/ q=4 (medium priority queue: Q2)",  language='python')
         st.code("> First Come First Served (lowest priority queue: Q3)",  language='python')
         avs.add_vertical_space(2)
          # test the preemptive scheduling
