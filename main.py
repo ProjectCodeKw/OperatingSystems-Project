@@ -6,6 +6,7 @@ from streamlit_extras import add_vertical_space as avs
 import pandas as pd
 from time import sleep
 from scheduling.RoundRobin1 import RoundRobin
+from scheduling.SRTF import SRTF
 
 def read_file():
     # returns a list of process objects
@@ -133,7 +134,17 @@ def streamlit_app1():
         algo = "Shortest Remaining Time First "
         #title 
         st.subheader(algo)
-        st.markdown("Soon...")
+        srtf = SRTF("input.txt")
+        avg_waiting_time, avg_turnaround_time, avg_response_time = srtf.srtf_scheduling(page_no="1")
+        avg_data_srtf = [
+                      (" Response Time (ms)", avg_response_time),
+                      (" Waiting Time (ms)", avg_waiting_time),
+                      (" TurnAround Time (ms)", avg_turnaround_time)
+                  ]
+      
+        df2_srtf = pd.DataFrame(avg_data_srtf, [' ','  ', '   '], columns=["Average", "Value"])
+        avs.add_vertical_space(2)
+        st.table(df2_srtf)
 
     with tab_d:
         algo = "Multi-level Feedback Queue Custom"
@@ -176,6 +187,13 @@ def streamlit_app1():
 
         df2_MLFQC = pd.DataFrame(avg_data_MLFQC,  [' ','  ', '   '], columns=["Average", "Value"])
         st.table(df2_MLFQC)
+
+def simulate_srtf():
+    srtf = SRTF("input.txt")
+    avg_waiting_time, avg_turnaround_time, avg_response_time = srtf.srtf_scheduling(page_no="1")
+
+    return [avg_response_time, avg_waiting_time, avg_turnaround_time]
+
 
 def simulate_rr():
     rr = RoundRobin("input.txt", page_no="2")
