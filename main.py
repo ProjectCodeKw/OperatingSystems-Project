@@ -135,7 +135,7 @@ def streamlit_app1():
         #title 
         st.subheader(algo)
         srtf = SRTF("input.txt")
-        avg_waiting_time, avg_turnaround_time, avg_response_time = srtf.srtf_scheduling(page_no="1")
+        avg_waiting_time, avg_turnaround_time, avg_response_time = srtf.schedule(page_no="1")
         avg_data_srtf = [
                       (" Response Time (ms)", avg_response_time),
                       (" Waiting Time (ms)", avg_waiting_time),
@@ -190,7 +190,7 @@ def streamlit_app1():
 
 def simulate_srtf():
     srtf = SRTF("input.txt")
-    avg_waiting_time, avg_turnaround_time, avg_response_time = srtf.srtf_scheduling(page_no="1")
+    avg_waiting_time, avg_turnaround_time, avg_response_time = srtf.schedule(page_no="1")
 
     return [avg_response_time, avg_waiting_time, avg_turnaround_time]
 

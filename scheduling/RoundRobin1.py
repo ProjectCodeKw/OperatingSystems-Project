@@ -1,12 +1,11 @@
 import streamlit as st
 from streamlit_extras import add_vertical_space as avs
-
 class RoundRobin:
     def __init__(self, filepath, page_no="1"):
         self.p,self.quantim = self.read_processes(filepath, page_no)
         self.num_of_processes = len(self.p)
-        self.BT = [i[1] for i in self.p]  # Burst Time (corrected index based on file input structure)
-        self.AT = [i[0] for i in self.p]  # Arrival Time
+        self.BT = [i[2] for i in self.p]  # Burst Time
+        self.AT = [i[1] for i in self.p]  # Arrival Time
         self.time_passed = 0
         self.execution_time = [-1] * self.num_of_processes  # To track the first execution time
         self.WT = [0] * self.num_of_processes  # Waiting Time
@@ -36,32 +35,48 @@ class RoundRobin:
 # The Execution Part
     def schedule(self, page_no="1"):
         if page_no == '1':
-            st.subheader(":green[Starting Round Robin Scheduling]")
+            st.markdown(":green[Starting Round Robin Scheduling]")
         while self.Ready_queue: # scheduling loop until all processes finish
+            for i in self.Ready_queue:
+                if self.AT[i] == self.time_passed:
+                    if page_no=='1':
+                        st.markdown(f"⏰: {self.time_passed}ms | Process ID: {self.p[i][0]} | Arrived ")
+
             i = self.Ready_queue.pop(0) # get the next process from the ready queue
+
+
             if self.BT[i] > 0:  # the process need CPU
 
                 if self.execution_time[i] == -1:  # if it is the first execution of the process
                     self.execution_time[i] = self.time_passed   #save the start time of the process execution
                     self.RT[i] = abs(self.time_passed - self.AT[i])  #calculate responce time
 
+
+
                 #execute the process for the quantum or until it finishes
-                exec_time = min(self.BT[i], self.quantim)
+                exec_time = min(self.BT[i], self.quantim)   # to ensure that the process is not executed for more than the quantum
                 self.BT[i] -= exec_time
                 self.time_passed += exec_time
 
+
+
+                #for j in self.Ready_queue:
+                 #   if self.AT[j] == self.time_passed:
+                  #      print(f"⏰: {self.time_passed}ms | Process ID: {self.p[j][0]} | Arrived ")
+
+
                 #prints execution info:
                 if page_no == '1':
-                    st.markdown(f"⏰: {self.time_passed}ms | Process ID: {self.p[i][2]} is :green[Running] ")
+                    st.markdown(f"⏰: {self.time_passed}ms | Process ID: {self.p[i][0]} is :green[Running] ")
 
 
 
                 #aclculate turnaround and waiting times if the process terminate
                 if self.BT[i] == 0:
                     self.TAT[i] = self.time_passed - self.AT[i]  # total time (arrival to termination) --> current time - AT
-                    self.WT[i] = self.TAT[i] - self.p[i][1] #waiting in the ready queue -->TAT -BT
+                    self.WT[i] = self.TAT[i] - self.p[i][2] #waiting in the ready queue -->TAT -BT
                     if page_no == '1':
-                        st.markdown(f"⏰: {self.time_passed}ms | Process ID: {self.p[i][2]} is :red[Finished!] ")
+                        st.markdown(f"⏰: {self.time_passed}ms | Process ID: {self.p[i][0]} is :red[Finished!] ")
 
                 if self.BT[i] > 0:
                     self.Ready_queue.append(i)  # return the procces back to the queue
@@ -74,6 +89,10 @@ class RoundRobin:
         Avg_RT = sum(self.RT) / self.num_of_processes
 
         return Avg_WT, Avg_TAT, Avg_RT
+
+
+
+
 
 
 
