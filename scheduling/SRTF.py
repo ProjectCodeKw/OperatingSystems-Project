@@ -1,8 +1,8 @@
 import streamlit as st
 from streamlit_extras import add_vertical_space as avs
 class SRTF:
-    def __init__(self, filepath):
-        self.p = self.read_processes(filepath)
+    def __init__(self, filepath, page_no='1'):
+        self.p = self.read_processes(filepath, page_no)
         self.num_of_processes = len(self.p)
         self.BT = [i[2] for i in self.p]  # Burst Time
         self.AT = [i[1] for i in self.p]  # Arrival Time

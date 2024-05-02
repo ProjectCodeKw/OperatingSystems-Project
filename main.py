@@ -189,10 +189,13 @@ def streamlit_app1():
         st.table(df2_MLFQC)
 
 def simulate_srtf():
-    srtf = SRTF("input.txt")
-    avg_waiting_time, avg_turnaround_time, avg_response_time = srtf.schedule(page_no="1")
+    srtf = SRTF("input.txt", '2')
+    avg_waiting_time, avg_turnaround_time, avg_response_time = srtf.schedule(page_no="2")
+    wt = srtf.WT
+    rt = srtf.RT
+    tat = srtf.TAT
 
-    return [avg_response_time, avg_waiting_time, avg_turnaround_time]
+    return rt, wt, tat, [avg_response_time, avg_waiting_time, avg_turnaround_time]
 
 
 def simulate_rr():
@@ -249,20 +252,22 @@ def streamlit_app2():
     dataframe_mlfq_rt, dataframe_mlfq_wt, dataframe_mlfq_tat, custom_avg = simulate_mlfq()
     sleep(1)
     dataframe_rr_rt, dataframe_rr_wt, dataframe_rr_tat, rr_avg = simulate_rr()
+    sleep(1)
+    dataframe_srtf_rt, dataframe_srtf_wt, dataframe_srtf_tat, srtf_avg = simulate_srtf()
 
 
     # return a dataframe sutiable list
     dataframe_rt = []
     for i in range(len(dataframe_mlfq_rt)):
-        dataframe_rt.append([ i+1, dataframe_pp_rt[i], dataframe_mlfq_rt[i], dataframe_rr_rt[i]])
+        dataframe_rt.append([ i+1, dataframe_pp_rt[i], dataframe_mlfq_rt[i], dataframe_rr_rt[i],dataframe_srtf_rt[i] ])
 
     dataframe_wt = []
     for i in range(len(dataframe_mlfq_rt)):
-        dataframe_wt.append([i+1, dataframe_pp_wt[i], dataframe_mlfq_wt[i], dataframe_rr_wt[i]])
+        dataframe_wt.append([i+1, dataframe_pp_wt[i], dataframe_mlfq_wt[i], dataframe_rr_wt[i], dataframe_srtf_wt[i]])
 
     dataframe_tat = []
     for i in range(len(dataframe_mlfq_rt)):
-        dataframe_tat.append([i+1,dataframe_pp_tat[i], dataframe_mlfq_tat[i], dataframe_rr_tat[i]])
+        dataframe_tat.append([i+1,dataframe_pp_tat[i], dataframe_mlfq_tat[i], dataframe_rr_tat[i], dataframe_srtf_tat[i]])
 
 
     with tab_rt:
@@ -270,7 +275,7 @@ def streamlit_app2():
         avs.add_vertical_space(2)
 
         # 1. display the average time winners:
-        average_rt = [custom_avg[0], pp_avg[0], rr_avg[0]]
+        average_rt = [custom_avg[0], pp_avg[0], rr_avg[0], srtf_avg[0]]
         average_rt.sort()
 
         st.markdown("**:green[LEADERBOARD]**")
@@ -282,6 +287,8 @@ def streamlit_app2():
                 st.markdown(f"🥇: PP > {average_rt[0]}ms")
             elif average_rt[0] == rr_avg[0]:
                 st.markdown(f"🥇: RR > {average_rt[0]}ms")
+            elif average_rt[0] == srtf_avg[0]:
+                st.markdown(f"🥇: SRTF > {average_rt[0]}ms")
 
 
 
@@ -292,6 +299,8 @@ def streamlit_app2():
                 st.markdown(f"🥈: PP > {average_rt[1]}ms")
             elif average_rt[1] == rr_avg[0]:
                 st.markdown(f"🥈: RR > {average_rt[1]}ms")
+            elif average_rt[1] == srtf_avg[0]:
+                st.markdown(f"🥈: SRTF > {average_rt[1]}ms")
 
         with c3:
             if average_rt[2] == custom_avg[0]:
@@ -300,6 +309,8 @@ def streamlit_app2():
                 st.markdown(f"🥉: PP > {average_rt[2]}ms")
             elif average_rt[2] == rr_avg[0]:
                 st.markdown(f"🥉: RR > {average_rt[2]}ms")
+            elif average_rt[2] == srtf_avg[0]:
+                st.markdown(f"🥉: SRTF > {average_rt[2]}ms")
 
         st.markdown("---")
 
@@ -313,16 +324,16 @@ def streamlit_app2():
         
         chart_data = pd.DataFrame(
         dataframe_rt,
-        columns = ['Process PID (starting from 1)', 'PP', 'MLFQ', 'RR'])
+        columns = ['Process PID (starting from 1)', 'PP', 'MLFQ', 'RR', 'SRTF'])
 
         st.line_chart(
             chart_data,
             x = 'Process PID (starting from 1)',
-            y = ['PP', 'MLFQ', 'RR'],
-            color=['#8bd8bd', '#3b8a0b', '#a3193b']
+            y = ['PP', 'MLFQ', 'RR', 'SRTF'],
+            color=['#8bd8bd', '#3b8a0b', '#a3193b', '#ffa500']
         )
 
-        df_rt = pd.DataFrame(dataframe_rt, [' ','  ','   ','    ','   '] , columns=["PID", "PP", "MLFQ", 'RR'])
+        df_rt = pd.DataFrame(dataframe_rt, [' ','  ','   ','    ','   '] , columns=["PID", "PP", "MLFQ", 'RR', 'SRTF'])
         st.table(df_rt)
 
 
@@ -331,7 +342,7 @@ def streamlit_app2():
         avs.add_vertical_space(2)
 
         # 1. display the average time winners:
-        average_wt = [custom_avg[1], pp_avg[1], rr_avg[1]]
+        average_wt = [custom_avg[1], pp_avg[1], rr_avg[1], srtf_avg[1]]
         average_wt.sort()
 
         st.markdown("**:green[LEADERBOARD]**")
@@ -343,6 +354,8 @@ def streamlit_app2():
                 st.markdown(f"🥇: PP > {average_wt[0]}ms")
             elif average_wt[0] == rr_avg[1]:
                 st.markdown(f"🥇: RR > {average_wt[0]}ms")
+            elif average_wt[0] == srtf_avg[1]:
+                st.markdown(f"🥇: SRTF > {average_wt[0]}ms")
 
         with c2:
             if average_wt[1] == custom_avg[1]:
@@ -351,6 +364,8 @@ def streamlit_app2():
                 st.markdown(f"🥈: PP > {average_wt[1]}ms")
             elif average_wt[1] == rr_avg[1]:
                 st.markdown(f"🥈: RR > {average_wt[1]}ms")
+            elif average_wt[1] == srtf_avg[1]:
+                st.markdown(f"🥈: SRTF > {average_wt[1]}ms")
 
         with c3:
             if average_wt[2] == custom_avg[1]:
@@ -359,6 +374,8 @@ def streamlit_app2():
                 st.markdown(f"🥉: PP > {average_wt[2]}ms")
             elif average_wt[2] == rr_avg[1]:
                 st.markdown(f"🥉: RR > {average_wt[2]}ms")
+            elif average_wt[2] == srtf_avg[1]:
+                st.markdown(f"🥉: SRTF > {average_wt[2]}ms")
 
 
         st.markdown("---")
@@ -373,16 +390,16 @@ def streamlit_app2():
         
         chart_data = pd.DataFrame(
         dataframe_wt,
-        columns = ['Process PID (starting from 1)', 'PP', 'MLFQ', 'RR'])
+        columns = ['Process PID (starting from 1)', 'PP', 'MLFQ', 'RR', 'SRTF'])
 
         st.line_chart(
             chart_data,
             x = 'Process PID (starting from 1)',
-            y = ['PP', 'MLFQ', 'RR'],
-            color=['#8bd8bd', '#3b8a0b','#a3193b']
+            y = ['PP', 'MLFQ', 'RR', 'SRTF'],
+            color=['#8bd8bd', '#3b8a0b','#a3193b', '#ffa500']
         )
 
-        df_wt = pd.DataFrame(dataframe_wt, [' ','  ','   ','    ','   '], columns=["PID", "PP", "MLFQ", 'RR'])
+        df_wt = pd.DataFrame(dataframe_wt, [' ','  ','   ','    ','   '], columns=["PID", "PP", "MLFQ", 'RR', 'SRTF'])
         st.table(df_wt)
 
     with tab_tat:
@@ -390,7 +407,7 @@ def streamlit_app2():
         avs.add_vertical_space(2)
 
         # 1. display the average time winners:
-        average_tat = [custom_avg[2], pp_avg[2], rr_avg[2]]
+        average_tat = [custom_avg[2], pp_avg[2], rr_avg[2], srtf_avg[2]]
         average_tat.sort()
 
         st.markdown("**:green[LEADERBOARD]**")
@@ -402,6 +419,8 @@ def streamlit_app2():
                 st.markdown(f"🥇: PP > {average_tat[0]}ms")
             elif average_tat[0] == rr_avg[2]:
                 st.markdown(f"🥇: RR > {average_tat[0]}ms")
+            elif average_tat[0] == srtf_avg[2]:
+                st.markdown(f"🥇: SRTF > {average_tat[0]}ms")
 
         with c2:
             if average_tat[1] == custom_avg[2]:
@@ -410,6 +429,8 @@ def streamlit_app2():
                 st.markdown(f"🥈: PP > {average_tat[1]}ms")
             elif average_tat[1] == rr_avg[2]:
                 st.markdown(f"🥈: RR > {average_tat[1]}ms")
+            elif average_tat[1] == srtf_avg[2]:
+                st.markdown(f"🥈: SRTF > {average_tat[1]}ms")
 
         with c3:
             if average_tat[2] == custom_avg[2]:
@@ -418,8 +439,8 @@ def streamlit_app2():
                 st.markdown(f"🥉: PP > {average_tat[2]}ms")
             elif average_tat[2] == rr_avg[2]:
                 st.markdown(f"🥉: RR > {average_tat[2]}ms")
-
-
+            elif average_tat[2] == srtf_avg[2]:
+                st.markdown(f"🥉: SRTF > {average_tat[2]}ms")
 
         st.markdown("---")
 
@@ -433,16 +454,16 @@ def streamlit_app2():
         
         chart_data = pd.DataFrame(
         dataframe_tat,
-        columns = ['Process PID (starting from 1)', 'PP', 'MLFQ', 'RR'])
+        columns = ['Process PID (starting from 1)', 'PP', 'MLFQ', 'RR', 'SRTF'])
 
         st.line_chart(
             chart_data,
             x = 'Process PID (starting from 1)',
-            y = ['PP', 'MLFQ', 'RR'],
-            color=['#8bd8bd', '#3b8a0b','#a3193b']
+            y = ['PP', 'MLFQ', 'RR', 'SRTF'],
+            color=['#8bd8bd', '#3b8a0b','#a3193b','#ffa500']
         )
 
-        df_wt = pd.DataFrame(dataframe_tat, [' ','  ','   ','    ','   '], columns=["PID", "PP", "MLFQ", 'RR'])
+        df_wt = pd.DataFrame(dataframe_tat, [' ','  ','   ','    ','   '], columns=["PID", "PP", "MLFQ", 'RR', 'SRTF'])
         st.table(df_wt)
         
         
