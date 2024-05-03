@@ -5,7 +5,7 @@ import streamlit as st
 from streamlit_extras import add_vertical_space as avs
 import pandas as pd
 from time import sleep
-from scheduling.RoundRobin1 import RoundRobin
+from scheduling.rr import RoundRobin
 from scheduling.SRTF import SRTF
 
 def read_file():
@@ -116,10 +116,24 @@ def streamlit_app1():
         algo = "Round Robin"
         #title 
         st.subheader(algo)
-
         avs.add_vertical_space(2)
-        rr = RoundRobin("input.txt")
-        Avg_WT, Avg_TAT, Avg_RT = rr.schedule(page_no="1")
+        q, processes_objs = read_file()
+        rr = RoundRobin(processes_objs, q)
+        Avg_WT, Avg_TAT, Avg_RT = rr.roundrobin(page_no="1")
+
+        avs.add_vertical_space(1)
+        st.markdown('---')
+        st.subheader("FINAL GRANT CHART:")
+        st.markdown(f":green[CONTEXT SWITCH COUNT: {len(rr.grant_chart)-1}]")
+        time_list = [f'{rr.gc_st[i]} -> {rr.gc_ft[i]}ms' for i,v in enumerate(rr.grant_chart)] 
+        p_list =  [i for i in rr.grant_chart] 
+        
+        data_PP = [
+                tuple(p_list),
+            ]
+        df1_PP = pd.DataFrame(data_PP, ['Process'],  columns=time_list)
+        st.table(df1_PP)
+
         avg_data_RR = [
                       (" Response Time (ms)", Avg_RT),
                       (" Waiting Time (ms)", Avg_WT),
@@ -199,13 +213,14 @@ def simulate_srtf():
 
 
 def simulate_rr():
-    rr = RoundRobin("input.txt", page_no="2")
-    Avg_WT, Avg_TAT, Avg_RT = rr.schedule(page_no="2")
-    rr_rt = rr.RT
-    rr_wt = rr.WT
-    rr_tat = rr.TAT
+    q, processes_objs = read_file()
+    rr = RoundRobin(processes_objs, q)
+    Avg_WT, Avg_TAT, Avg_RT = rr.roundrobin(page_no="2")
+    rr_rt = [i.rt if i.rt !=-1 else 0 for i in rr.processes ]
+    rr_wt =  [i.wt for i in rr.processes]
+    rr_tat =  [i.tat for i in rr.processes]
 
-    return rr_rt, rr_wt, rr_tat, [Avg_RT, Avg_WT, Avg_WT]
+    return rr_rt, rr_wt, rr_tat, [Avg_RT, Avg_WT, Avg_TAT]
 
 def simulate_pp():
     # read the input file:
@@ -282,35 +297,33 @@ def streamlit_app2():
         c1,c2,c3,c4 = st.columns(4)
         with c1:
             if average_rt[0] == custom_avg[0]:
-                st.markdown(f"🥇: MLFQ > {average_rt[0]}ms")
+                st.markdown(f"🥇: MLFQ = {average_rt[0]}ms")
             elif average_rt[0] == pp_avg[0]:
-                st.markdown(f"🥇: PP > {average_rt[0]}ms")
+                st.markdown(f"🥇: PP = {average_rt[0]}ms")
             elif average_rt[0] == rr_avg[0]:
-                st.markdown(f"🥇: RR > {average_rt[0]}ms")
+                st.markdown(f"🥇: RR = {average_rt[0]}ms")
             elif average_rt[0] == srtf_avg[0]:
-                st.markdown(f"🥇: SRTF > {average_rt[0]}ms")
-
-
+                st.markdown(f"🥇: SRTF = {average_rt[0]}ms")
 
         with c2:
             if average_rt[1] == custom_avg[0]:
-                st.markdown(f"🥈: MLFQ > {average_rt[1]}ms")
+                st.markdown(f"🥈: MLFQ = {average_rt[1]}ms")
             elif average_rt[1] == pp_avg[0]:
-                st.markdown(f"🥈: PP > {average_rt[1]}ms")
+                st.markdown(f"🥈: PP = {average_rt[1]}ms")
             elif average_rt[1] == rr_avg[0]:
-                st.markdown(f"🥈: RR > {average_rt[1]}ms")
+                st.markdown(f"🥈: RR = {average_rt[1]}ms")
             elif average_rt[1] == srtf_avg[0]:
-                st.markdown(f"🥈: SRTF > {average_rt[1]}ms")
+                st.markdown(f"🥈: SRTF = {average_rt[1]}ms")
 
         with c3:
             if average_rt[2] == custom_avg[0]:
-                st.markdown(f"🥉: MLFQ > {average_rt[2]}ms")
+                st.markdown(f"🥉: MLFQ = {average_rt[2]}ms")
             elif average_rt[2] == pp_avg[0]:
-                st.markdown(f"🥉: PP > {average_rt[2]}ms")
+                st.markdown(f"🥉: PP = {average_rt[2]}ms")
             elif average_rt[2] == rr_avg[0]:
-                st.markdown(f"🥉: RR > {average_rt[2]}ms")
+                st.markdown(f"🥉: RR = {average_rt[2]}ms")
             elif average_rt[2] == srtf_avg[0]:
-                st.markdown(f"🥉: SRTF > {average_rt[2]}ms")
+                st.markdown(f"🥉: SRTF = {average_rt[2]}ms")
 
         st.markdown("---")
 
@@ -349,33 +362,33 @@ def streamlit_app2():
         c1,c2,c3,c4 = st.columns(4)
         with c1:
             if average_wt[0] == custom_avg[1]:
-                st.markdown(f"🥇: MLFQ > {average_wt[0]}ms")
+                st.markdown(f"🥇: MLFQ = {average_wt[0]}ms")
             elif average_wt[0] == pp_avg[1]:
-                st.markdown(f"🥇: PP > {average_wt[0]}ms")
+                st.markdown(f"🥇: PP = {average_wt[0]}ms")
             elif average_wt[0] == rr_avg[1]:
-                st.markdown(f"🥇: RR > {average_wt[0]}ms")
+                st.markdown(f"🥇: RR = {average_wt[0]}ms")
             elif average_wt[0] == srtf_avg[1]:
-                st.markdown(f"🥇: SRTF > {average_wt[0]}ms")
+                st.markdown(f"🥇: SRTF = {average_wt[0]}ms")
 
         with c2:
             if average_wt[1] == custom_avg[1]:
-                st.markdown(f"🥈: MLFQ > {average_wt[1]}ms")
+                st.markdown(f"🥈: MLFQ = {average_wt[1]}ms")
             elif average_wt[1] == pp_avg[1]:
-                st.markdown(f"🥈: PP > {average_wt[1]}ms")
+                st.markdown(f"🥈: PP = {average_wt[1]}ms")
             elif average_wt[1] == rr_avg[1]:
-                st.markdown(f"🥈: RR > {average_wt[1]}ms")
+                st.markdown(f"🥈: RR = {average_wt[1]}ms")
             elif average_wt[1] == srtf_avg[1]:
-                st.markdown(f"🥈: SRTF > {average_wt[1]}ms")
+                st.markdown(f"🥈: SRTF = {average_wt[1]}ms")
 
         with c3:
             if average_wt[2] == custom_avg[1]:
-                st.markdown(f"🥉: MLFQ > {average_wt[2]}ms")
+                st.markdown(f"🥉: MLFQ = {average_wt[2]}ms")
             elif average_wt[2] == pp_avg[1]:
-                st.markdown(f"🥉: PP > {average_wt[2]}ms")
+                st.markdown(f"🥉: PP = {average_wt[2]}ms")
             elif average_wt[2] == rr_avg[1]:
-                st.markdown(f"🥉: RR > {average_wt[2]}ms")
+                st.markdown(f"🥉: RR = {average_wt[2]}ms")
             elif average_wt[2] == srtf_avg[1]:
-                st.markdown(f"🥉: SRTF > {average_wt[2]}ms")
+                st.markdown(f"🥉: SRTF = {average_wt[2]}ms")
 
 
         st.markdown("---")
@@ -414,33 +427,33 @@ def streamlit_app2():
         c1,c2,c3,c4 = st.columns(4)
         with c1:
             if average_tat[0] == custom_avg[2]:
-                st.markdown(f"🥇: MLFQ > {average_tat[0]}ms")
+                st.markdown(f"🥇: MLFQ = {average_tat[0]}ms")
             elif average_tat[0] == pp_avg[2]:
-                st.markdown(f"🥇: PP > {average_tat[0]}ms")
+                st.markdown(f"🥇: PP = {average_tat[0]}ms")
             elif average_tat[0] == rr_avg[2]:
-                st.markdown(f"🥇: RR > {average_tat[0]}ms")
+                st.markdown(f"🥇: RR = {average_tat[0]}ms")
             elif average_tat[0] == srtf_avg[2]:
-                st.markdown(f"🥇: SRTF > {average_tat[0]}ms")
+                st.markdown(f"🥇: SRTF = {average_tat[0]}ms")
 
         with c2:
             if average_tat[1] == custom_avg[2]:
-                st.markdown(f"🥈: MLFQ > {average_tat[1]}ms")
+                st.markdown(f"🥈: MLFQ = {average_tat[1]}ms")
             elif average_tat[1] == pp_avg[2]:
-                st.markdown(f"🥈: PP > {average_tat[1]}ms")
+                st.markdown(f"🥈: PP = {average_tat[1]}ms")
             elif average_tat[1] == rr_avg[2]:
-                st.markdown(f"🥈: RR > {average_tat[1]}ms")
+                st.markdown(f"🥈: RR = {average_tat[1]}ms")
             elif average_tat[1] == srtf_avg[2]:
-                st.markdown(f"🥈: SRTF > {average_tat[1]}ms")
+                st.markdown(f"🥈: SRTF = {average_tat[1]}ms")
 
         with c3:
             if average_tat[2] == custom_avg[2]:
-                st.markdown(f"🥉: MLFQ > {average_tat[2]}ms")
+                st.markdown(f"🥉: MLFQ = {average_tat[2]}ms")
             elif average_tat[2] == pp_avg[2]:
-                st.markdown(f"🥉: PP > {average_tat[2]}ms")
+                st.markdown(f"🥉: PP = {average_tat[2]}ms")
             elif average_tat[2] == rr_avg[2]:
-                st.markdown(f"🥉: RR > {average_tat[2]}ms")
+                st.markdown(f"🥉: RR = {average_tat[2]}ms")
             elif average_tat[2] == srtf_avg[2]:
-                st.markdown(f"🥉: SRTF > {average_tat[2]}ms")
+                st.markdown(f"🥉: SRTF = {average_tat[2]}ms")
 
         st.markdown("---")
 
