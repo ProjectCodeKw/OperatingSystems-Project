@@ -32,12 +32,15 @@ class SRTF:
     # The Execution Part
     def schedule(self, page_no='1'):
         if page_no == '1':
-            st.markdown("Starting Shortest Remaining Time First Scheduling")
+            st.subheader("Starting Shortest Remaining Time First Scheduling")
         while self.Ready_queue:  # scheduling loop until all processes finish
             for i in self.Ready_queue:  # print that process i is arrived if time_passed = its AT
                 if self.AT[i] == self.time_passed:
                     if page_no == '1':
-                        st.markdown(f"⏰: {self.time_passed}ms | Process ID: {self.p[i][0]} | Arrived ")
+                        st.markdown(f" ")
+                        st.markdown(
+                        f"<span style='color:yellow;'>⏰: {self.time_passed}ms | Process ID: {self.p[i][0]} | Arrived</span>",
+                        unsafe_allow_html=True)
 
 
             min_remaining_time = float('inf')
