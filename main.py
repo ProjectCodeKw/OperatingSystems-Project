@@ -258,6 +258,67 @@ def simulate_mlfq():
 
     return custom_rt, custom_wt, custom_tat, [custom.avg_rt, custom.avg_wt, custom.avg_tat]
 
+
+def leaderboard(average_time, rr, srtf, pp,mlfq ,index):
+    c1,c2,c3,c4 = st.columns(4)
+    selected = []
+    with c1:
+            if average_time[0] == mlfq[index]:
+                st.markdown(f"🥇: MLFQ = {average_time[0]}ms")
+                selected.append('MLFQ')
+            elif average_time[0] == pp[index]:
+                st.markdown(f"🥇: PP = {average_time[0]}ms")
+                selected.append('PP')
+            elif average_time[0] == rr[index]:
+                st.markdown(f"🥇: RR = {average_time[0]}ms")
+                selected.append('RR')
+            elif average_time[0] == srtf[index]:
+                st.markdown(f"🥇: SRTF = {average_time[0]}ms")
+                selected.append('SRTF')
+
+    with c2:
+            if average_time[1] == mlfq[index] and 'MLFQ' not in selected:
+                st.markdown(f"🥈: MLFQ = {average_time[1]}ms")
+                selected.append('MLFQ')
+            elif average_time[1] == pp[index] and 'PP' not in selected :
+                st.markdown(f"🥈: PP = {average_time[1]}ms")
+                selected.append('PP')
+            elif average_time[1] == rr[index] and 'RR' not in selected :
+                st.markdown(f"🥈: RR = {average_time[1]}ms")
+                selected.append('RR')
+            elif average_time[1] == srtf[index] and 'SRTF' not in selected :
+                st.markdown(f"🥈: SRTF = {average_time[1]}ms")
+                selected.append('SRTF')
+
+    with c3:
+            if average_time[2] == mlfq[index] and 'MLFQ' not in selected :
+                st.markdown(f"🥉: MLFQ = {average_time[2]}ms")
+            elif average_time[2] == pp[index] and 'PP' not in selected:
+                st.markdown(f"🥉: PP = {average_time[2]}ms")
+            elif average_time[2] == rr[index] and 'RR' not in selected: 
+                st.markdown(f"🥉: RR = {average_time[2]}ms")
+            elif average_time[2] == srtf[index] and 'SRTF' not in selected:
+                st.markdown(f"🥉: SRTF = {average_time[2]}ms")
+
+    st.markdown("---")
+
+
+def plot(dataframe_time, rows):
+    chart_data = pd.DataFrame(
+    dataframe_time,
+        columns = ['Process PID (starting from 1)', 'PP', 'MLFQ', 'RR', 'SRTF'])
+
+    st.line_chart(
+            chart_data,
+            x = 'Process PID (starting from 1)',
+            y = ['PP', 'MLFQ', 'RR', 'SRTF'],
+            color=['#8bd8bd', '#3b8a0b', '#a3193b', '#ffa500']
+        )
+
+    df = pd.DataFrame(dataframe_time,rows, columns=["PID", "PP", "MLFQ", 'RR', 'SRTF'])
+    st.table(df)
+
+
 def streamlit_app2():
     b, page = get_session_state()
     tab_rt, tab_wt, tab_tat = st.tabs(["Response Time", "Waiting Time", "Turn Around Time"])
@@ -284,7 +345,7 @@ def streamlit_app2():
     for i in range(len(dataframe_mlfq_rt)):
         dataframe_tat.append([i+1,dataframe_pp_tat[i], dataframe_mlfq_tat[i], dataframe_rr_tat[i], dataframe_srtf_tat[i]])
 
-
+    rows = [' '*i for i in range(len(dataframe_mlfq_rt))]
     with tab_rt:
         st.title("Graphs Page: Response Time")
         avs.add_vertical_space(2)
@@ -294,39 +355,9 @@ def streamlit_app2():
         average_rt.sort()
 
         st.markdown("**:green[LEADERBOARD]**")
-        c1,c2,c3,c4 = st.columns(4)
-        with c1:
-            if average_rt[0] == custom_avg[0]:
-                st.markdown(f"🥇: MLFQ = {average_rt[0]}ms")
-            elif average_rt[0] == pp_avg[0]:
-                st.markdown(f"🥇: PP = {average_rt[0]}ms")
-            elif average_rt[0] == rr_avg[0]:
-                st.markdown(f"🥇: RR = {average_rt[0]}ms")
-            elif average_rt[0] == srtf_avg[0]:
-                st.markdown(f"🥇: SRTF = {average_rt[0]}ms")
+        leaderboard(average_rt,pp=pp_avg, rr=rr_avg, mlfq=custom_avg, srtf=srtf_avg , index=0)
 
-        with c2:
-            if average_rt[1] == custom_avg[0]:
-                st.markdown(f"🥈: MLFQ = {average_rt[1]}ms")
-            elif average_rt[1] == pp_avg[0]:
-                st.markdown(f"🥈: PP = {average_rt[1]}ms")
-            elif average_rt[1] == rr_avg[0]:
-                st.markdown(f"🥈: RR = {average_rt[1]}ms")
-            elif average_rt[1] == srtf_avg[0]:
-                st.markdown(f"🥈: SRTF = {average_rt[1]}ms")
-
-        with c3:
-            if average_rt[2] == custom_avg[0]:
-                st.markdown(f"🥉: MLFQ = {average_rt[2]}ms")
-            elif average_rt[2] == pp_avg[0]:
-                st.markdown(f"🥉: PP = {average_rt[2]}ms")
-            elif average_rt[2] == rr_avg[0]:
-                st.markdown(f"🥉: RR = {average_rt[2]}ms")
-            elif average_rt[2] == srtf_avg[0]:
-                st.markdown(f"🥉: SRTF = {average_rt[2]}ms")
-
-        st.markdown("---")
-
+        
         # 2. plot the response times for all the processes:
         st.subheader(":green[Response time for all the processes in all the algorithms]")
         c1,c2,c3,c4 = st.columns(4)
@@ -335,63 +366,25 @@ def streamlit_app2():
         with c2:
             st.caption("Y-axis is REPONSE TIME")
         
-        chart_data = pd.DataFrame(
-        dataframe_rt,
-        columns = ['Process PID (starting from 1)', 'PP', 'MLFQ', 'RR', 'SRTF'])
+        plot(dataframe_rt, rows)
 
-        st.line_chart(
-            chart_data,
-            x = 'Process PID (starting from 1)',
-            y = ['PP', 'MLFQ', 'RR', 'SRTF'],
-            color=['#8bd8bd', '#3b8a0b', '#a3193b', '#ffa500']
-        )
-
-        df_rt = pd.DataFrame(dataframe_rt, [' ','  ','   ','    ','   '] , columns=["PID", "PP", "MLFQ", 'RR', 'SRTF'])
-        st.table(df_rt)
-
+        avs.add_vertical_space(2)
+        st.subheader("The Average Response Times")
+        st.markdown(f"PP algorithm: {pp_avg[0]}ms")
+        st.markdown(f"RR algorithm: {rr_avg[0]}ms")
+        st.markdown(f"SRTF algorithm: {srtf_avg[0]}ms")
+        st.markdown(f"MLFQ algorithm: {custom_avg[0]}ms")
+        
 
     with tab_wt:
         st.title("Graphs Page: Waiting Time")
         avs.add_vertical_space(2)
 
-        # 1. display the average time winners:
         average_wt = [custom_avg[1], pp_avg[1], rr_avg[1], srtf_avg[1]]
         average_wt.sort()
 
         st.markdown("**:green[LEADERBOARD]**")
-        c1,c2,c3,c4 = st.columns(4)
-        with c1:
-            if average_wt[0] == custom_avg[1]:
-                st.markdown(f"🥇: MLFQ = {average_wt[0]}ms")
-            elif average_wt[0] == pp_avg[1]:
-                st.markdown(f"🥇: PP = {average_wt[0]}ms")
-            elif average_wt[0] == rr_avg[1]:
-                st.markdown(f"🥇: RR = {average_wt[0]}ms")
-            elif average_wt[0] == srtf_avg[1]:
-                st.markdown(f"🥇: SRTF = {average_wt[0]}ms")
-
-        with c2:
-            if average_wt[1] == custom_avg[1]:
-                st.markdown(f"🥈: MLFQ = {average_wt[1]}ms")
-            elif average_wt[1] == pp_avg[1]:
-                st.markdown(f"🥈: PP = {average_wt[1]}ms")
-            elif average_wt[1] == rr_avg[1]:
-                st.markdown(f"🥈: RR = {average_wt[1]}ms")
-            elif average_wt[1] == srtf_avg[1]:
-                st.markdown(f"🥈: SRTF = {average_wt[1]}ms")
-
-        with c3:
-            if average_wt[2] == custom_avg[1]:
-                st.markdown(f"🥉: MLFQ = {average_wt[2]}ms")
-            elif average_wt[2] == pp_avg[1]:
-                st.markdown(f"🥉: PP = {average_wt[2]}ms")
-            elif average_wt[2] == rr_avg[1]:
-                st.markdown(f"🥉: RR = {average_wt[2]}ms")
-            elif average_wt[2] == srtf_avg[1]:
-                st.markdown(f"🥉: SRTF = {average_wt[2]}ms")
-
-
-        st.markdown("---")
+        leaderboard(average_wt,pp=pp_avg, rr=rr_avg, mlfq=custom_avg, srtf=srtf_avg, index=1 )
 
         # 2. plot the response times for all the processes:
         st.subheader(":green[Waiting time for all the processes in all the algorithms]")
@@ -401,19 +394,14 @@ def streamlit_app2():
         with c2:
             st.caption("Y-axis is WAITING TIME")
         
-        chart_data = pd.DataFrame(
-        dataframe_wt,
-        columns = ['Process PID (starting from 1)', 'PP', 'MLFQ', 'RR', 'SRTF'])
+        plot(dataframe_wt, rows)
 
-        st.line_chart(
-            chart_data,
-            x = 'Process PID (starting from 1)',
-            y = ['PP', 'MLFQ', 'RR', 'SRTF'],
-            color=['#8bd8bd', '#3b8a0b','#a3193b', '#ffa500']
-        )
-
-        df_wt = pd.DataFrame(dataframe_wt, [' ','  ','   ','    ','   '], columns=["PID", "PP", "MLFQ", 'RR', 'SRTF'])
-        st.table(df_wt)
+        avs.add_vertical_space(2)
+        st.subheader("The Average Waiting Times")
+        st.markdown(f"PP algorithm: {pp_avg[1]}ms")
+        st.markdown(f"RR algorithm: {rr_avg[1]}ms")
+        st.markdown(f"SRTF algorithm: {srtf_avg[1]}ms")
+        st.markdown(f"MLFQ algorithm: {custom_avg[1]}ms")
 
     with tab_tat:
         st.title("Graphs Page: Turn Around Time")
@@ -424,38 +412,7 @@ def streamlit_app2():
         average_tat.sort()
 
         st.markdown("**:green[LEADERBOARD]**")
-        c1,c2,c3,c4 = st.columns(4)
-        with c1:
-            if average_tat[0] == custom_avg[2]:
-                st.markdown(f"🥇: MLFQ = {average_tat[0]}ms")
-            elif average_tat[0] == pp_avg[2]:
-                st.markdown(f"🥇: PP = {average_tat[0]}ms")
-            elif average_tat[0] == rr_avg[2]:
-                st.markdown(f"🥇: RR = {average_tat[0]}ms")
-            elif average_tat[0] == srtf_avg[2]:
-                st.markdown(f"🥇: SRTF = {average_tat[0]}ms")
-
-        with c2:
-            if average_tat[1] == custom_avg[2]:
-                st.markdown(f"🥈: MLFQ = {average_tat[1]}ms")
-            elif average_tat[1] == pp_avg[2]:
-                st.markdown(f"🥈: PP = {average_tat[1]}ms")
-            elif average_tat[1] == rr_avg[2]:
-                st.markdown(f"🥈: RR = {average_tat[1]}ms")
-            elif average_tat[1] == srtf_avg[2]:
-                st.markdown(f"🥈: SRTF = {average_tat[1]}ms")
-
-        with c3:
-            if average_tat[2] == custom_avg[2]:
-                st.markdown(f"🥉: MLFQ = {average_tat[2]}ms")
-            elif average_tat[2] == pp_avg[2]:
-                st.markdown(f"🥉: PP = {average_tat[2]}ms")
-            elif average_tat[2] == rr_avg[2]:
-                st.markdown(f"🥉: RR = {average_tat[2]}ms")
-            elif average_tat[2] == srtf_avg[2]:
-                st.markdown(f"🥉: SRTF = {average_tat[2]}ms")
-
-        st.markdown("---")
+        leaderboard(average_tat,pp=pp_avg, rr=rr_avg, mlfq=custom_avg, srtf=srtf_avg, index=2 )
 
         # 2. plot the response times for all the processes:
         st.subheader(":green[TAT time for all the processes in all the algorithms]")
@@ -465,19 +422,14 @@ def streamlit_app2():
         with c2:
             st.caption("Y-axis is TAT TIME")
         
-        chart_data = pd.DataFrame(
-        dataframe_tat,
-        columns = ['Process PID (starting from 1)', 'PP', 'MLFQ', 'RR', 'SRTF'])
+        plot(dataframe_tat, rows)
 
-        st.line_chart(
-            chart_data,
-            x = 'Process PID (starting from 1)',
-            y = ['PP', 'MLFQ', 'RR', 'SRTF'],
-            color=['#8bd8bd', '#3b8a0b','#a3193b','#ffa500']
-        )
-
-        df_wt = pd.DataFrame(dataframe_tat, [' ','  ','   ','    ','   '], columns=["PID", "PP", "MLFQ", 'RR', 'SRTF'])
-        st.table(df_wt)
+        avs.add_vertical_space(2)
+        st.subheader("The Average TurnAround Times")
+        st.markdown(f"PP algorithm: {pp_avg[2]}ms")
+        st.markdown(f"RR algorithm: {rr_avg[2]}ms")
+        st.markdown(f"SRTF algorithm: {srtf_avg[2]}ms")
+        st.markdown(f"MLFQ algorithm: {custom_avg[2]}ms")
         
         
 st.set_page_config(page_title="CPU Scheduling", page_icon="⏰", layout="centered")
