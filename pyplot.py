@@ -4,7 +4,6 @@ from scheduling.preePriority import PreemptivePriority
 from scheduling.rr import RoundRobin
 from scheduling.SRTF import SRTF
 import matplotlib.pyplot as plt
-import numpy as np
 
 def read_file():
     # returns a list of process objects

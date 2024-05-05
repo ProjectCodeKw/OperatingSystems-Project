@@ -1,5 +1,5 @@
 # CPU SCHEDULING ALGORITHMS SIMULATOR
-*Assumung you have VS code and Python installed in your deviece already*
+*Assumung you have VS code and Python installed on your deviece already*
 
 ## To run the website interface on your local machine do the following steps:
 
@@ -11,6 +11,8 @@
    `pip install streamlit-extras`
    
    `pip install pandas`
+
+   `pip install matplotlib`
       
 
 3. Check the installation for the libraries
@@ -34,6 +36,9 @@
    `streamlit run main.py`
 
 CONGRATS NOW THE WEBSITE SHOULD APPEAR ON YOUR LOCACL HOST WEB PAGE.
+
+NOTE: the default input txt file that is used in main.py & pyplot.py is named: input.txt
+if you want to change the default input, modify that file.
 
 ## To display the plots only without a website interface (plot the diffrences between the algorithms)
 
