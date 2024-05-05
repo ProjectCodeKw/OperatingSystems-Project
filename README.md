@@ -5,6 +5,7 @@
 
 1. Download the following libraries in your VS code terminal,
    run the following commands:
+   *for mac use pip3 instead of pip*
    
    `pip install streamlit`
    
