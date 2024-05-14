@@ -30,7 +30,10 @@ class Custom:
             self.q2.append(demoted_p)
         elif demote_to == "Q3":
             #remove process from Q2
-            self.q2.remove(demoted_p)
+            try:
+                self.q2.remove(demoted_p)
+            except: pass
+            
             # add to Q3
             self.q3.append(demoted_p)
 
