@@ -23,6 +23,8 @@ def read_file():
 
     f.close()
     return p_objects, q
+
+
 def plotting(process_pid, pp_rt, custom_rt, rr_rt, strf_rt, pp_wt, custom_wt, rr_wt, strf_wt, pp_tat, custom_tat, rr_tat, strf_tat):
     # Plot for Response Time
     fig_rt, ax_rt = plt.subplots(figsize=(8, 6))

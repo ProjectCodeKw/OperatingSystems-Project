@@ -1,12 +1,12 @@
-import streamlit as st
-import pandas as pd
-from streamlit_extras import add_vertical_space as avs
+import streamlit as st  ## UI
+import pandas as pd #plotting
+from streamlit_extras import add_vertical_space as avs  ## UI
 
 class RoundRobin:
     def __init__(self, processes:list, q:int):
         self.processes = processes
         self.q = q
-        self.grant_chart = []
+        self.grant_chart = [] #strings
         self.current_time = 0
 
         # THESE ARE FOR PRINTING ONLY THEY SURVE NO USE IN COMPUTING
@@ -70,8 +70,8 @@ class RoundRobin:
 
 
     def roundrobin(self, page_no = '1'):
-        processes = []
-        counter_q = self.q
+        processes = [] #ready queue
+        counter_q = self.q #keep track of quantum
         i = 0
 
         # get the initial queue
@@ -87,7 +87,7 @@ class RoundRobin:
             if processes[i].rt == 0  and f"P{processes[i].pid}({processes[i].bt})" not in self.grant_chart:
                 if processes[i].at == 0 and self.current_time == 0:
                     #set it to negative temporarly 
-                    self.processes[self.processes.index(processes[i])].rt = -1
+                    self.processes[self.processes.index(processes[i])].rt = -1 #offcialyy = 0
                 else:
                     self.processes[self.processes.index(processes[i])].rt = self.current_time - processes[i].at
 

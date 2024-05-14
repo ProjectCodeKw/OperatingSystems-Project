@@ -101,6 +101,11 @@ class PreemptivePriority:
                 # no prev process
                 # store the prev process so we dont print it in a row multiple times
                 prev_process = running_p
+                running_p.rt = -1
+                # run the process:
+                self.grant_chart.append(
+                    f"P{running_p.pid}({running_p.bt+1}, {running_p.priority})"
+                )
 
             if temp_q != []:
                 # a new process have arravied
@@ -128,25 +133,7 @@ class PreemptivePriority:
                 # set the TAT
                 running_p.tat = running_p.ft - running_p.at + 1
 
-            if self.current_time == 0:
-                # get response time:
-                if (
-                    running_p.rt == 0
-                    and f"P{running_p}({running_p.bt}, {running_p.priority})"
-                    not in self.grant_chart
-                ):
-                    # response time is calculated for the first burst
-                    running_p.rt = self.current_time - running_p.at
-
-                # store the process in prev so we check again for context switch
-                prev_process = running_p
-
-                # run the process:
-                self.grant_chart.append(
-                    f"P{running_p.pid}({running_p.bt+1}, {running_p.priority})"
-                )
-
-            elif prev_process != running_p:
+            if prev_process != running_p:
                 # context switch happend, processes have changed
 
                 # get response time:
@@ -182,6 +169,8 @@ class PreemptivePriority:
         # get avg response time
         for p in self.processes:
             # like we assumed if rt is -1 then it is actually 0 so no need to sum it
+            if p.rt == -1:
+                p.rt = 0
             self.avg_rt += p.rt
 
         self.avg_rt = self.avg_rt / n

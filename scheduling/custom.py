@@ -153,6 +153,9 @@ class Custom:
                 # no prev process
                 # store the prev process so we dont print it in a row multiple times
                 prev_process = running_p
+                
+                #run the process:
+                self.grant_chart.append(f'Q1: P{running_p.pid}')
 
             if temp_q != []:
                 # a new process have arravied
@@ -189,23 +192,7 @@ class Custom:
                 self.q1.remove(running_p)
                 
 
-            if self.current_time == 0:
-                # no prev process
-                # store the prev process so we dont print it in a row multiple times
-                prev_process = running_p
-
-                #get response time:
-                if running_p.rt == 0 and f'Q1: P{running_p}' not in self.grant_chart:
-                    # response time is calculated for the first burst 
-                    running_p.rt = self.current_time - running_p.at
-
-                #store the process in prev so we check again for context switch
-                prev_process = running_p 
-                
-                #run the process:
-                self.grant_chart.append(f'Q1: P{running_p.pid}')
-
-            elif prev_process != running_p:
+            if prev_process != running_p:
                 # context switch happend, processes have changed
 
                 #get response time:
@@ -288,8 +275,9 @@ class Custom:
                     
     
     def first_come_first_served(self, q1_next_p):
-        
+        #QUEUE3
         if q1_next_p ==-1:
+            #no processes is waitintg in Queue 1 or QUEUE 2
             stop_time = -1
         else:
             stop_time = q1_next_p.at
@@ -352,7 +340,6 @@ class Custom:
 
 
     def determine_queue(self, page_no):
-
         while self.process_completed < len(self.processes):
             #PP queue
             if self.q1 != []:
