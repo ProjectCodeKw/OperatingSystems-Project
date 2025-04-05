@@ -1,5 +1,12 @@
 # CPU SCHEDULING ALGORITHMS SIMULATOR
 *Assumung you have VS code and Python installed on your deviece already*
+## Description
+CPU scheduling is about choosing which process gets to use the CPU for running its tasks, while other
+processes wait. It’s important because it helps use resources efficiently and improves how well the
+system works. The main aim of CPU scheduling is to keep the CPU busy and to reduce system
+overhead. The operating system ensures there’s always a process ready to go, so the CPU always has
+something to do.
+For more details check the report PDF.
 
 ## To run the website interface on your local machine do the following steps:
 
